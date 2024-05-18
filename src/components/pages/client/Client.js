@@ -1,0 +1,82 @@
+import React, { useState, useEffect } from "react";
+import axios from 'axios';
+import { Table, TableHead, TableBody, TableRow, TableCell, Paper, Typography } from "@mui/material";
+import { makeStyles } from '@mui/styles';
+
+
+const useStyles = makeStyles(() => ({
+  paper: {
+    margin: '24px',
+    padding: '24px',
+  },
+  table: {
+    minWidth: 650,
+  },
+  tableHead: {
+    backgroundColor: '#bdbdbd', // Gris pour l'en-tête
+  },
+  tableHeadCell: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  tableRow: {
+    '&:nth-of-type(odd)': {
+      backgroundColor: '#f5f5f5',
+    },
+  },
+  title: {
+    marginBottom: '24px',
+  },
+}));
+
+const ClientTable = () => {
+  const classes = useStyles();
+  const [clients, setClients] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get('https://localhost:44352/api/Client');
+        setClients(response.data);
+      } catch (error) {
+        console.error('Erreur lors du chargement des clients :', error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return (
+    <Paper className={classes.paper}>
+      <Typography variant="h4" className={classes.title}>
+        Liste des Clients
+      </Typography>
+      <Table className={classes.table}>
+        <TableHead className={classes.tableHead}>
+          <TableRow>
+            <TableCell className={classes.tableHeadCell}>ID</TableCell>
+            <TableCell className={classes.tableHeadCell}>Nom du Client</TableCell>
+            <TableCell className={classes.tableHeadCell}>Adresse Courriel</TableCell>
+            <TableCell className={classes.tableHeadCell}>Télèphone</TableCell>
+            <TableCell className={classes.tableHeadCell}>Pays</TableCell>
+            <TableCell className={classes.tableHeadCell}>Projet</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {clients.map((client) => (
+            <TableRow key={client.clientId} className={classes.tableRow}>
+              <TableCell>{client.clientId}</TableCell>
+              <TableCell>{client.clientName}</TableCell>
+              <TableCell>{client.email}</TableCell>
+              <TableCell>{client.telephone}</TableCell>
+              <TableCell>{client.pays}</TableCell>
+              <TableCell>{client.projectName}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </Paper>
+  );
+};
+
+export default ClientTable;

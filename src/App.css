@@ -1,0 +1,154 @@
+/* Styles pour la barre de défilement */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 5px;
+}
+
+/* Styles généraux */
+body {
+  background-color: #e5e7e6 !important;
+  overflow-x: hidden; /* Masquer le défilement horizontal */
+  font-family: 'Arial', sans-serif; /* Police moderne */
+  margin: 0; /* Enlever les marges par défaut */
+  height: 100vh; /* S'assurer que le body occupe toute la hauteur de la fenêtre */
+}
+
+html {
+  height: 100%; /* S'assurer que l'html occupe toute la hauteur de la fenêtre */
+}
+
+.main-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  width: 100vw; /* S'assurer que le conteneur principal occupe toute la largeur */
+  padding: 0; /* Enlever le padding */
+  margin: 0; /* Enlever les marges */
+}
+
+.power-bi-dashboard {
+  width: 100%;
+  height: 100%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Ajouter une ombre pour un effet de profondeur */
+  border-radius: 0; /* Enlever les coins arrondis pour occuper toute la page */
+  overflow: hidden; /* Assurer que le contenu reste à l'intérieur des bords */
+}
+
+.power-bi-iframe {
+  width: 100%;
+  height: 100%;
+  border: none; /* Enlever la bordure pour un affichage plus propre */
+}
+
+.main-title {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.main-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 20px;
+  margin: 15px 0;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  padding: 8px 15px;
+  border-radius: 5px;
+}
+
+.card-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card-inner > .card_icon {
+  font-size: 25px;
+}
+
+.microsoft-logo {
+  height: 24px;
+  margin-right: 10px;
+}
+
+.auth-container {
+  text-align: center;
+  margin-top: 50px;
+}
+
+.charts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 60px;
+  height: 300px;
+}
+
+.App {
+  text-align: center;
+}
+
+/* Animation du logo */
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: red;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+/* Masquer le défilement horizontal dans le composant de grille de données */
+.MuiDataGrid-root {
+  height: 100% !important;
+  width: 100% !important;
+}
+
+/* Pour personnaliser le fond du composant de grille de données */
+#root > div > div:nth-child(2) > div > div > div.MuiDataGrid-main.css-204u17-MuiDataGrid-main {
+  background-color: #fff !important;
+}
+
+/* Animation du logo */
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -1,0 +1,112 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+.MuiDataGrid-root {
+  height: 100% !important;
+  width: 100% !important;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Autres styles CSS existants */
+
+/* Styles pour le composant Auth */
+.landing-page {
+display: flex;
+justify-content: center;
+align-items: flex-end; /* Aligner le contenu en bas */
+height: 91vh; /* Hauteur de la page */
+background-size: cover; /* Couvrir tout l'arrière-plan */
+background-repeat: no-repeat; /* Pas de répétition de l'image */
+background-position: center; /* Positionner l'image au centre */
+background-color: #F7F7F7; /* Couleur de fond */
+padding-bottom: 50px; /* Espacement en bas */
+width: 100%;
+}
+
+.left-section {
+flex: 1; /* Utiliser tout l'espace disponible */
+display: flex;
+justify-content: flex-start; /* Aligner le contenu à gauche */
+align-items: flex-end; /* Aligner le contenu en bas */
+margin-left: 20px; /* Marge à gauche */
+}
+
+.logo {
+width: 400px; /* Ajustez la taille du logo selon vos besoins */
+}
+
+.right-section {
+display: flex;
+justify-content: flex-start; /* Aligner le contenu à gauche */
+align-items: flex-end; /* Aligner le contenu en bas */
+margin-left: 20px; /* Marge à gauche */
+}
+
+.auth-container {
+text-align: center;
+}
+
+.button {
+position: absolute;
+top: 570px; /* Déplace le bouton vers le haut */
+left: 380px; /* Déplace le bouton vers la gauche */
+background-color: #134873;
+color: white;
+border: none;
+padding: 10px 20px;
+border-radius: 5px;
+cursor: pointer;
+height: 50px; /* Hauteur du bouton */
+width: 250px; /* Largeur du bouton */
+transition: background-color 0.3s;
+}
+
+
+.button:hover {
+background-color: #005a9e;
+}
+
+.button-content {
+display: flex;
+align-items: center;
+}
+
+.microsoft-logo {
+height: 30px;
+margin-right: 15px;
+}

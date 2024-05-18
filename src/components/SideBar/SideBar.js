@@ -30,7 +30,9 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 const drawerWidth = 240;
 
 const role = localStorage.getItem("role") || "";
-
+const userInfo =  JSON.parse(localStorage.getItem("currentUser"));
+// les info adhoukom elkol mawjoudin taw fil userInfo tnajim ta5idh ay 7aja. fi cas hehdi just 5dhit el username
+// c bon ? 5arrajli mail  n7eb ken nom 
 const DrawerHeader = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
@@ -143,9 +145,8 @@ const SideBar = () => {
       }}
         alt="Remy Sharp"
         src="/static/images/avatar/1.jpg" />
-      <Typography align="center" sx={{ fontSize: open ? 17 : 0, transition: "0.25s" }} > mariam mallouli </Typography>
-      <Typography align="center" sx={{ fontSize: open ? 14 : 0, transition: "0.25s", color: theme.palette.info.main }} > responsable  </Typography>
-
+      <Typography align="center" sx={{ fontSize: open ? 17 : 0, transition: "0.25s" }} > {userInfo?.name} </Typography>
+      <Typography align="center" sx={{ fontSize: open ? 14 : 0, transition: "0.25s", color: theme.palette.info.main }} > {role}  </Typography>
       <List>
         {Array1.map((item) => (
           <ListItem key={item.path} disablePadding sx={{ display: 'block' }}>

@@ -60,6 +60,7 @@ const Feuille = () => {
   useEffect(() => {
     fetchWorkItems();
     console.log("you are  ?")
+
   }, []);
 
 
@@ -515,6 +516,7 @@ const fetchWorkItems = async () => {
   //   });
   // };
 
+
   const columns = [
     {
       field: "belongTo",
@@ -653,7 +655,7 @@ const fetchWorkItems = async () => {
       renderCell: (params) => (
         <input
           type="number"
-          value={params.row[dayName] || ""}
+          // value={params.row[dayName] || ""}
           onChange={(event) => handleHourChange(event, params.row.id, dayName)}
           style={{ width: "100%" }}
         />

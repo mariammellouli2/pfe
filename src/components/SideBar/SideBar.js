@@ -31,8 +31,7 @@ const drawerWidth = 240;
 
 const role = localStorage.getItem("role") || "";
 const userInfo =  JSON.parse(localStorage.getItem("currentUser"));
-// les info adhoukom elkol mawjoudin taw fil userInfo tnajim ta5idh ay 7aja. fi cas hehdi just 5dhit el username
-// c bon ? 5arrajli mail  n7eb ken nom 
+
 const DrawerHeader = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
@@ -83,16 +82,16 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 
 const Array1 = [
  
-  { "text": "Feuille", "icon": <PendingActionsOutlinedIcon />, "path": "/" },
+  { "text": "Feuille", "icon": <PendingActionsOutlinedIcon />, "path": "/feuille" },
 ];
 const Array2 = [
-  { "text": "Approbation", "icon": <InventoryOutlinedIcon />, "path": "/Approbation" },
-  { "text": "Projet", "icon": <BallotOutlinedIcon />, "path": role == "responsable" ? "/projet/responsable" : "/projet" },
-   { "text": "client", "icon": <PermContactCalendarOutlinedIcon />, "path": "/Client" }
+  { "text": "Approbation", "icon": <InventoryOutlinedIcon />, "path": role =="responsable" ? "/Approbation/Responsable" : "/Approbation/Collaborateur"},
+  { "text": "Projet", "icon": <BallotOutlinedIcon />, "path": role == "responsable" ? "/projet/Responsable" : "/projet/Collaborateur" },
+   { "text": "client", "icon": <PermContactCalendarOutlinedIcon />, "path": role == "responsable" ? "/Client/responsable" : "Client/Collaborateur" }
 ];
 const Array3 = [
   { "text": "Calendrier", "icon": <CalendarMonthIcon />, "path": "/Calendrier" },
-  { "text": "Dashboard", "icon": <BarChartOutlinedIcon />, "path": "/Dashboard" }
+  { "text": "Dashboard", "icon": <BarChartOutlinedIcon />, "path": role == "responsable" ? "/Dashboard": "" }
 ];
 
  

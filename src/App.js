@@ -37,14 +37,15 @@ const App = () => {
                                 <Route path="/" element={<Navigate to="/Authentification" replace />} />
                                 <Route path="/Authentification" element={<Auth />} />
                                 <Route path="/feuille" element={<Feuille />} />
-                                <Route path="/projet" element={<Projet /> }/>
-                                <Route path="/projet/responsable" element={<ProjetResponsable /> }/>
-                                <Route path="/client" element={<RoleProtectedRoute allowedRoles={["responsable"]}><Client /></RoleProtectedRoute>} />
-                                <Route path="/dashboard" element={<RoleProtectedRoute allowedRoles={["responsable"]}><Dashboard /></RoleProtectedRoute>} />
-                                <Route path="/approbation" element={<RoleProtectedRoute allowedRoles={["responsable"]}><Approbation /></RoleProtectedRoute>} />
-                                <Route path="/approbation/collab" element={<RoleProtectedRoute allowedRoles={["collaborateur"]}><ApprobationCollab /></RoleProtectedRoute>} />
-                                <Route path="/calendrier" element={<RoleProtectedRoute allowedRoles={["collaborateur", "responsable"]}><Calendrier /></RoleProtectedRoute>} />
-                                <Route path="/parametrage" element={<RoleProtectedRoute allowedRoles={["collaborateur", "responsable"]}><Parametrage /></RoleProtectedRoute>} />
+                                <Route path="/projet/Collaborateur" element={<Projet /> }/>
+                                <Route path="/projet/Responsable" element={<ProjetResponsable /> }/>
+                                <Route path="/client/Collaborateur" element={<Client /> }/>
+                                <Route path="/client/Responsable" element={<Client /> }/>
+                                <Route path="/dashboard" element={<Dashboard /> }/>
+                                <Route path="/approbation/Responsable" element={<Approbation /> }/>
+                                <Route path="/approbation/collaborateur" element={<ApprobationCollab /> } />
+                                <Route path="/calendrier" element={<Calendrier /> } />
+                                <Route path="/parametrage" element={<Parametrage /> } />
                                 <Route path="*" element={<NotFound />} />
                             </Routes>
                         </div>

@@ -29,6 +29,8 @@ import { useNavigate } from "react-router-dom";
 import { useMsal } from "@azure/msal-react";
 import axios from 'axios';
 
+const userInfo =  JSON.parse(localStorage.getItem("currentUser"));
+
 const Feuille = () => {
   const { instance } = useMsal();
   const navigate = useNavigate();
@@ -86,46 +88,46 @@ const Feuille = () => {
   }, []);
 
   const handlePostData = async () => {
-  setLoading(true);
-  try {
-    const tracages = dataRows.flatMap(row => 
-      weekdays.map(day => {
-        const dayKey = format(day, "EEEE dd", { locale: fr });
-        const hours = row[dayKey] ? parseFloat(row[dayKey]) : 0;
-        if (hours > 0) {
-          return {
-            workItemId: row.id,
-            year: day.getFullYear(),
-            month: day.getMonth() + 1,
-            day: day.getDate(),
-            dayName: format(day, "EEEE", { locale: fr }),
-            hours: hours
-          };
+    setLoading(true);
+    try {
+      const tracages = dataRows.flatMap(row =>
+        weekdays.map(day => {
+          const dayKey = format(day, "EEEE dd", { locale: fr });
+          const hours = row[dayKey] ? parseFloat(row[dayKey]) : 0;
+          if (hours > 0) {
+            return {
+              workItemId: row.workItemId, // Use the actual work item id
+              year: day.getFullYear(),
+              month: day.getMonth() + 1,
+              day: day.getDate(),
+              dayName: format(day, "EEEE", { locale: fr }),
+              hours: hours
+            };
+          }
+          return null;
+        }).filter(entry => entry !== null)
+      );
+  
+      console.log("tracages", tracages);
+      const response = await axios.post('https://localhost:44352/api/Tracages', tracages, {
+        headers: {
+          'Content-Type': 'application/json'
         }
-        return null;
-      }).filter(entry => entry !== null)
-    );
-
-    console.log("tracages", tracages);
-    const response = await axios.post('https://localhost:44352/api/Tracages', tracages, {
-      headers: {
-        'Content-Type': 'application/json'
+      });
+      console.log('Réponse de l\'API POST:', response.data);
+      setShowSuccessMessage(true);
+    } catch (error) {
+      if (error.response) {
+        console.error('Erreur lors de la requête POST:', error.response.data);
+      } else if (error.request) {
+        console.error('Aucune réponse reçue:', error.request);
+      } else {
+        console.error('Erreur lors de la configuration de la requête:', error.message);
       }
-    });
-    console.log('Réponse de l\'API POST:', response.data);
-    setShowSuccessMessage(true);
-  } catch (error) {
-    if (error.response) {
-      console.error('Erreur lors de la requête POST:', error.response.data);
-    } else if (error.request) {
-      console.error('Aucune réponse reçue:', error.request);
-    } else {
-      console.error('Erreur lors de la configuration de la requête:', error.message);
+    } finally {
+      setLoading(false);
     }
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
 const flattenObject = (obj, nestedKey) => {
   // Create a new object to hold the flattened properties
@@ -164,47 +166,74 @@ const fetchWorkItems = async () => {
   }
 };
 
-  const fetchTracages = async (workItems) => {
-    setLoading(true);
+const fetchTracages = async (workItems) => {
+  setLoading(true);
+  try {
+    const response = await axios.get('https://localhost:44352/api/Tracages');
+    const tracages = response.data;
+
+    console.log("Tracages:", tracages);
+
+    let total = 0;
+    const data = workItems.map((item, key) => {
+      const workItemsEntries = tracages.filter(tracage => tracage.workItemId === item.id);
+
+      const hoursEntries = workItemsEntries.reduce((acc, tracage) => {
+        const dayKey = format(new Date(tracage.year, tracage.month - 1, tracage.day), "EEEE dd", { locale: fr });
+        acc[dayKey] = tracage.hours;
+        return acc;
+      }, {});
+
+      total += calc(item);
+
+      return {
+        ...item,
+        id: key, // This is the row id
+        workItemId: item.id, // This is the actual work item id
+        ...hoursEntries,
+        total: calc(item),
+      };
+    });
+
+    console.log("Processed Data:", data);
+    setDataRows(data);
+    setTotalGlobal(total);
+  } catch (error) {
+    console.error("Error fetching tracages:", error);
+    console.error("Error details:", error.response?.data || error.message);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+useEffect(() => {
+  const fetchWorkItems = async () => {
     try {
-      const response = await axios.get(`https://localhost:44352/api/Tracages`);
-
-      const tracages = response.data;
-      console.log("Tracssssage  s+-+:",workItems);
-      let total = 0;
-      const data = workItems?.map((item, key) => {
-        const workItemsEntries = workItems.filter((tracage) => tracage.workItemId === item.id);
-        const hoursEntries = tracages.reduce((acc, tracage) => {
-          const dayKey = format(new Date(tracage.year, tracage.month - 1, tracage.day), "EEEE dd", { locale: fr });
-          acc[dayKey] = tracage.hours;
-          return acc;
-        }, {});
-
-        console.table("the ITEM : ", item)
-        total += calc(item);
-        return {
-          ...item,
-          id: key,
-          ...hoursEntries,
-          total: calc(item),
-        };
-      });
-      console.log("-+-aaa+-+",data);
-      // for (let index = 0; index < data?.length; index++) {
-      //   const element = data[index];
-      //   data[index]= flattenObject(element,"workItem");
-      // }
-      console.log("-+-no plz+-+",data);
-  
-      setDataRows(data);
-      setTotalGlobal(total);
+      const response = await axios.get('https://localhost:44352/api/WorkItems/all');
+      const workItems = response.data;
+      await fetchTracages(workItems);
     } catch (error) {
-      console.error("Error fetching tracages:", error);
-    } finally {
-      setLoading(false);
+      console.error("Error fetching work items:", error);
     }
   };
 
+  fetchWorkItems();
+}, []);
+
+useEffect(() => {
+  const fetchWorkItems = async () => {
+    try {
+      const response = await axios.get('https://localhost:44352/api/WorkItems');
+      const workItems = response.data;
+      await fetchTracages(workItems);
+    } catch (error) {
+      console.error("Error fetching work items:", error);
+    }
+  };
+
+  fetchWorkItems();
+}, []);
 
 
 
@@ -231,7 +260,7 @@ const fetchWorkItems = async () => {
   });
 
   useEffect(() => {
-    setUserName("Admin");
+    setUserName(userInfo?.name );
     const intervalId = setInterval(() => {
       const currentTime = new Date().toLocaleTimeString();
       setCurrentTime(currentTime);
@@ -248,7 +277,7 @@ const fetchWorkItems = async () => {
     weekday: "long",
     year: "numeric",
     month: "long",
-    day: "numeric",
+    day: "numeric",  
   });
 
   const handlePreviousWeek = () => {
@@ -418,58 +447,60 @@ const fetchWorkItems = async () => {
     showSuccessSnackbar();
   };
 
-  // const handleSendTimesheet = async () => {
-  //   setLoading(true);
-  //   try {
-  //     const accounts = await instance.getAllAccounts();
-  //     const email = accounts.length > 0 ? accounts[0].username : '';
-  //     const dateFeuille = new Date();
-  //     const tracages = dataRows.flatMap(row =>
-  //       weekdays.map(day => {
-  //         const dayKey = format(day, "EEEE dd", { locale: fr });
-  //         const hours = row[dayKey] ? parseFloat(row[dayKey]) : 0;
-  //         if (hours > 0) {
-  //           return {
-  //             workItemId: row.id,
-  //             year: day.getFullYear(),
-  //             month: day.getMonth() + 1,
-  //             day: day.getDate(),
-  //             dayName: format(day, "EEEE", { locale: fr }),
-  //             hours: hours
-  //           };
-  //         }
-  //         return null;
-  //       }).filter(entry => entry !== null)
-  //     );
+  const handleSendTimesheet = async () => {
+    setLoading(true);
+    try {
+      const accounts = await instance.getAllAccounts();
+      const email = accounts.length > 0 ? accounts[0].username : '';
+      const dateFeuille = new Date();
   
-  //     const timesheet = {
-  //       dateFeuille: dateFeuille,
-  //       dateEnvoie: dateFeuille,
-  //       statut: 'New',
-  //       email: email,
-  //       validatedBy: null,
-  //       tracages: tracages
-  //     };
+      const tracages = dataRows.flatMap(row =>
+        weekdays.map(day => {
+          const dayKey = format(day, "EEEE dd", { locale: fr });
+          const hours = row[dayKey] ? parseFloat(row[dayKey]) : 0;
+          if (hours > 0) {
+            return {
+              workItemId: row.workItemId, // Use the actual work item id
+              year: day.getFullYear(),
+              month: day.getMonth() + 1,
+              day: day.getDate(),
+              dayName: format(day, "EEEE", { locale: fr }),
+              hours: hours
+            };
+          }
+          return null;
+        }).filter(entry => entry !== null)
+      );
   
-  //     const response = await axios.post('https://localhost:44352/api/Timesheets/create', timesheet, {
-  //       headers: {
-  //         'Content-Type': 'application/json'
-  //       }
-  //     });
-  //     console.log('Réponse de l\'API POST:', response.data);
-  //     setShowSuccessMessage(true);
-  //   } catch (error) {
-  //     if (error.response) {
-  //       console.error('Erreur lors de la requête POST:', error.response.data);
-  //     } else if (error.request) {
-  //       console.error('Aucune réponse reçue:', error.request);
-  //     } else {
-  //       console.error('Erreur lors de la configuration de la requête:', error.message);
-  //     }
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
+      const timesheet = {
+        dateFeuille: dateFeuille.toISOString(),
+        dateEnvoie: dateFeuille.toISOString(),
+        statut: 'New',
+        email: email,
+        validatedBy: null,
+        tracages: tracages
+      };
+  
+      const response = await axios.post('https://localhost:44352/api/Timesheet/create', timesheet, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      console.log('Réponse de l\'API POST:', response.data);
+      setShowSuccessMessage(true);
+    } catch (error) {
+      if (error.response) {
+        console.error('Erreur lors de la requête POST:', error.response.data);
+      } else if (error.request) {
+        console.error('Aucune réponse reçue:', error.request);
+      } else {
+        console.error('Erreur lors de la configuration de la requête:', error.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   
 
   const handleSaveTimesheet = () => {
@@ -479,7 +510,7 @@ const fetchWorkItems = async () => {
 
   // const handleFacturableChange = (event, id) => {
   //   const { value } = event.target;
-  //   const updatedRows = dataRows.map((row) => {
+  //   const updatedRows = dataRows.map((row) => {}
   //     if (row.id === id) {
   //       return { ...row, facturable: value };
   //     }
@@ -518,6 +549,12 @@ const fetchWorkItems = async () => {
 
 
   const columns = [
+    {
+      field: "workItemId",
+      headerName: "Work Item ID",
+      width: 150,
+      hide: true, // This column will be hidden
+    },
     {
       field: "belongTo",
       headerName: "Projet",
@@ -591,7 +628,7 @@ const fetchWorkItems = async () => {
       headerAlign: "center",
       renderCell: (params) => (
         <Select
-          value={params.value || 'Non Facturable'}
+          value={params.value || "Non Facturable"}
           onChange={(event) => handlePrestationChange(event, params.row.id)}
           style={{ width: "100%" }}
         >
@@ -644,6 +681,7 @@ const fetchWorkItems = async () => {
       sortable: false,
     },
   ];
+  
   weekdays.forEach((day) => {
     const dayName = format(day, "EEEE dd", { locale: fr });
     columns.push({
@@ -655,14 +693,14 @@ const fetchWorkItems = async () => {
       renderCell: (params) => (
         <input
           type="number"
-          // value={params.row[dayName] || ""}
+          value={params.row[dayName] || ""}
           onChange={(event) => handleHourChange(event, params.row.id, dayName)}
           style={{ width: "100%" }}
         />
       ),
     });
   });
-
+  
   columns.push({
     field: "next",
     headerName: "Suivant",
@@ -674,6 +712,7 @@ const fetchWorkItems = async () => {
     width: 100,
     sortable: false,
   });
+  
 
   const handleAttachments = (id) => {
     console.log("Adding attachments for row with ID:", id);
@@ -716,10 +755,7 @@ const fetchWorkItems = async () => {
                   <IconButton color="primary" onClick={handlePostData}>
                     <Save style={{ color: "#494A4A" }} />
                   </IconButton>
-                  <IconButton color="primary"
-              
-                  //  onClick={handleSendTimesheet}
-                   >
+                  <IconButton color="primary" onClick={handleSendTimesheet}>
                     <Send style={{ color: "#494A4A" }} />
                   </IconButton>
                   <IconButton color="secondary" onClick={() => { /* Implementer handleDeleteTimesheet */ }}>

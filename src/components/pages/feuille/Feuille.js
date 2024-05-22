@@ -207,21 +207,21 @@ const fetchTracages = async (workItems) => {
 };
 
 
-useEffect(() => {
-  const fetchWorkItems = async () => {
-    try {
-      const response = await axios.get('https://localhost:44352/api/WorkItems/all');
-      const workItems = response.data;
-      await fetchTracages(workItems);
-    } catch (error) {
-      console.error("Error fetching work items:", error);
-    }
-  };
+//useEffect(() => {
+  //const fetchWorkItems = async () => {
+  //  try {
+    //  const response = await axios.get('https://localhost:44352/api/WorkItems/all');
+   //   const workItems = response.data;
+ //     await fetchTracages(workItems);
+  //  } catch (error) {
+//      console.error("Error fetching work items:", error);
+ //   }
+ // };
 
-  fetchWorkItems();
-}, []);
+ // fetchWorkItems();
+// }, []);
 
-useEffect(() => {
+ /* useEffect(() => {
   const fetchWorkItems = async () => {
     try {
       const response = await axios.get('https://localhost:44352/api/WorkItems');
@@ -234,7 +234,7 @@ useEffect(() => {
 
   fetchWorkItems();
 }, []);
-
+*/
 
 
   // const calculateTotal1 = (hoursEntries) => {
@@ -442,10 +442,7 @@ useEffect(() => {
     }, 3000);
   };
 
-  const handleDeleteTimesheet = () => {
-    console.log("Suppression de la timesheet...");
-    showSuccessSnackbar();
-  };
+
 
   const handleSendTimesheet = async () => {
     setLoading(true);
@@ -501,23 +498,32 @@ useEffect(() => {
     }
   };
 
+  const handleDeleteTimesheet = async (timesheetId) => {
+    try {
+      // Logique pour supprimer le timesheet
+      await axios.delete(`https://localhost:44352/api/WorkItem/${timesheetId}`);
+      // Mise à jour de l'état ou autre action après la suppression
+      console.log(`Timesheet avec l'ID ${timesheetId} a été supprimé.`);
+    } catch (error) {
+      // Gestion des erreurs
+      console.error('Erreur lors de la suppression :', error);
+    }
+  };
+  
   
 
-  const handleSaveTimesheet = () => {
-    console.log("Enregistrement de la timesheet...");
-    showSuccessSnackbar();
+  const handleFacturableChange = (event, id) => {
+    const { value } = event.target;
+    const updatedRows = dataRows.map((row) => {
+      if (row.id === id) {
+        return { ...row, facturable: value };
+      }
+      return row;
+    });
+    setDataRows(updatedRows);
   };
-
-  // const handleFacturableChange = (event, id) => {
-  //   const { value } = event.target;
-  //   const updatedRows = dataRows.map((row) => {}
-  //     if (row.id === id) {
-  //       return { ...row, facturable: value };
-  //     }
-  //     return row;
-  //   });
-  //   setDataRows(updatedRows);
-  // };
+  
+  
 
   // const handleAddTaskManually = () => {
   //   const newTask = {
@@ -629,7 +635,7 @@ useEffect(() => {
       renderCell: (params) => (
         <Select
           value={params.value || "Non Facturable"}
-          onChange={(event) => handlePrestationChange(event, params.row.id)}
+          onChange={(event) => handleFacturableChange(event, params.row.id)}
           style={{ width: "100%" }}
         >
           <MenuItem value="Non Facturable">Non Facturable</MenuItem>
@@ -637,6 +643,7 @@ useEffect(() => {
         </Select>
       ),
     },
+    
     {
       field: "state",
       headerName: "Statut",
@@ -752,23 +759,23 @@ useEffect(() => {
             components={{
               Toolbar: () => (
                 <Toolbar>
-                  <IconButton color="primary" onClick={handlePostData}>
-                    <Save style={{ color: "#494A4A" }} />
-                  </IconButton>
-                  <IconButton color="primary" onClick={handleSendTimesheet}>
-                    <Send style={{ color: "#494A4A" }} />
-                  </IconButton>
-                  <IconButton color="secondary" onClick={() => { /* Implementer handleDeleteTimesheet */ }}>
-                    <Delete style={{ color: "#f44336" }} />
-                  </IconButton>
-                  <div style={{ flex: 1 }} />
-                  <span style={{ fontWeight: "bold", marginRight: "20px" }}>
-                    Total Global: {totalGlobal}
-                  </span>
-                  <IconButton color="primary" onClick={() => setOpenAddTaskDialog(true)}>
-                    <Add />
-                  </IconButton>
-                </Toolbar>
+                <IconButton color="primary" onClick={handlePostData}>
+                  <Save style={{ color: "#494A4A" }} />
+                </IconButton>
+                <IconButton color="primary" onClick={handleSendTimesheet}>
+                  <Send style={{ color: "#494A4A" }} />
+                </IconButton>
+                <IconButton color="secondary" onClick={handleDeleteTimesheet}>
+                  <Delete style={{ color: "#f44336" }} />
+                </IconButton>
+                <div style={{ flex: 1 }} />
+                <span style={{ fontWeight: "bold", marginRight: "20px" }}>
+                  Total Global: {totalGlobal}
+                </span>
+                <IconButton color="primary" onClick={() => setOpenAddTaskDialog(true)}>
+                  <Add />
+                </IconButton>
+              </Toolbar>
               ),
             }}
           />
@@ -859,4 +866,4 @@ useEffect(() => {
   );
 };
 
-export default Feuille;
+export default Feuille ;

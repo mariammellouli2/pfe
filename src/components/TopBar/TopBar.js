@@ -9,7 +9,8 @@ import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import DarkModeOutlinedIcon from '@mui/icons-material/DarkModeOutlined';
 import LightModeOutlinedIcon from '@mui/icons-material/LightModeOutlined';
 import image from './logo1.png';
-import NotificationDropdown from './NotificationDropdown'; // Assurez-vous que le chemin est correct
+import * as signalR from '@microsoft/signalr';
+import NotificationDropdown from './NotificationDropdown'; // Ensure the path is correct
 
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',
@@ -75,6 +76,7 @@ const TopBar = () => {
   const [sticky, setSticky] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const [darkMode, setDarkMode] = useState(localStorage.getItem('currentMode') === 'dark');
+  const [notifications, setNotifications] = useState([]);
   const navigate = useNavigate();
   const { instance } = useMsal();
   const theme = useTheme();
@@ -88,6 +90,27 @@ const TopBar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    const connection = new signalR.HubConnectionBuilder()
+      .withUrl("https://localhost:44352/hub/notifications", {
+        withCredentials: true
+      })
+      .withAutomaticReconnect()
+      .build();
+
+    connection.start()
+      .then(() => console.log("Connected to SignalR"))
+      .catch(err => console.log("Connection error: ", err));
+
+    connection.on("ReceiveNotification", (message) => {
+      setNotifications(prev => [...prev, message]);
+    });
+
+    return () => {
+      connection.stop();
+    };
+  }, []);
+
   const handleLogout = () => {
     instance.logoutPopup().then(() => {
       navigate('/Authentification');
@@ -95,6 +118,7 @@ const TopBar = () => {
       console.error('Échec de la déconnexion:', e);
     });
   };
+
   const handleModeChange = () => {
     const newMode = darkMode ? 'light' : 'dark';
     localStorage.setItem('currentMode', newMode);
@@ -110,7 +134,7 @@ const TopBar = () => {
   };
 
   return (
-    <AppBar style={{position:"fixed",width:"100%"}} open={sticky}>
+    <AppBar style={{ position: "fixed", width: "100%" }} open={sticky}>
       <Toolbar>
         <img src={image} alt="Logo" style={{ height: '55px', width: '200px' }} />
         <Search>
@@ -128,7 +152,7 @@ const TopBar = () => {
           <IconButton onClick={handleModeChange} color="inherit">
             {darkMode ? <LightModeOutlinedIcon sx={{ mr: 1 }} /> : <DarkModeOutlinedIcon sx={{ mr: 1 }} />}
           </IconButton>
-          <NotificationDropdown />
+          <NotificationDropdown notifications={notifications} />
           <IconButton color="inherit">
             <SettingsOutlinedIcon sx={{ mr: 1 }} />
           </IconButton>

@@ -1,32 +1,32 @@
-import React, { useState, useEffect } from 'react';
-import { IconButton, Menu, MenuItem, Badge } from '@mui/material';
-import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined';
+import React, { useEffect, useState } from 'react';
+import { Menu, MenuItem, IconButton, Badge } from '@mui/material';
+import NotificationsIcon from '@mui/icons-material/Notifications';
 import * as signalR from '@microsoft/signalr';
 
 const NotificationDropdown = () => {
+  const [anchorEl, setAnchorEl] = React.useState(null);
   const [notifications, setNotifications] = useState([]);
-  const [anchorEl, setAnchorEl] = useState(null);
 
   useEffect(() => {
-    // Connect to SignalR hub
     const connection = new signalR.HubConnectionBuilder()
-      .withUrl("https://localhost:44352/api/Notifications")
-      .withAutomaticReconnect()
-      .build();
+        .withUrl("https://localhost:44352/api/Notification", {
+            withCredentials: true
+        })
+        .withAutomaticReconnect()
+        .build();
 
     connection.start()
-      .then(() => console.log("Connected to SignalR"))
-      .catch(err => console.log("Error connecting to SignalR:", err));
+        .then(() => console.log("Connected to SignalR"))
+        .catch(err => console.log("Connection error: ", err));
 
-    connection.on("ReceiveNotification", message => {
-      setNotifications(prevNotifications => [...prevNotifications, { text: message }]);
+    connection.on("ReceiveNotification", (message) => {
+        setNotifications(prev => [...prev, message]);
     });
 
-    // Cleanup connection on unmount
     return () => {
-      connection.stop().then(() => console.log("Disconnected from SignalR"));
+        connection.stop();
     };
-  }, []);
+}, []);
 
   const handleMenuClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -37,20 +37,29 @@ const NotificationDropdown = () => {
   };
 
   return (
-    <>
-      <IconButton onClick={handleMenuClick} color="inherit">
-        <Badge badgeContent={notifications.length} color="error">
-          <NotificationsOutlinedIcon />
+    <div>
+      <IconButton color="inherit" onClick={handleMenuClick}>
+        <Badge badgeContent={notifications.length} color="secondary">
+          <NotificationsIcon />
         </Badge>
       </IconButton>
-      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
-        {notifications.map((notification, index) => (
-          <MenuItem key={index} onClick={handleMenuClose}>
-            {notification.text}
-          </MenuItem>
-        ))}
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleMenuClose}
+      >
+         
+        {notifications.length === 0 ? (
+          <MenuItem onClick={handleMenuClose}>No new notifications</MenuItem>
+        ) : (
+          notifications.map((notification, index) => (
+            <MenuItem key={index} onClick={handleMenuClose}>
+              {notification}
+            </MenuItem>
+          ))
+        )}
       </Menu>
-    </>
+    </div>
   );
 };
 

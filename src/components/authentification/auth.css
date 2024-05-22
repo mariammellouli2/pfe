@@ -1,3 +1,5 @@
+/* Autres styles CSS existants */
+
 .App {
   text-align: center;
 }
@@ -42,71 +44,69 @@
   }
 }
 
-/* Autres styles CSS existants */
-
 /* Styles pour le composant Auth */
 .landing-page {
-display: flex;
-justify-content: center;
-align-items: flex-end; /* Aligner le contenu en bas */
-height: 91vh; /* Hauteur de la page */
-background-size: cover; /* Couvrir tout l'arrière-plan */
-background-repeat: no-repeat; /* Pas de répétition de l'image */
-background-position: center; /* Positionner l'image au centre */
-background-color: #F7F7F7; /* Couleur de fond */
-padding-bottom: 50px; /* Espacement en bas */
-width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end; /* Aligner le contenu en bas */
+  height: 100vh; /* Hauteur de la page */
+  background-image: url('D:\jaafar\prosheet (1)\prosheet\src\components\authentification\background.png'); /* Remplacer par le chemin de votre image */
+  background-size: cover; /* Couvrir tout l'arrière-plan */
+  background-repeat: no-repeat; /* Pas de répétition de l'image */
+  background-position: center; /* Positionner l'image au centre */
+  background-color: #F7F7F7; /* Couleur de fond */
+  padding-bottom: 50px; /* Espacement en bas */
+  width: 100%;
 }
 
 .left-section {
-flex: 1; /* Utiliser tout l'espace disponible */
-display: flex;
-justify-content: flex-start; /* Aligner le contenu à gauche */
-align-items: flex-end; /* Aligner le contenu en bas */
-margin-left: 20px; /* Marge à gauche */
+  flex: 1; /* Utiliser tout l'espace disponible */
+  display: flex;
+  justify-content: flex-start; /* Aligner le contenu à gauche */
+  align-items: flex-end; /* Aligner le contenu en bas */
+  margin-left: 20px; /* Marge à gauche */
 }
 
 .logo {
-width: 400px; /* Ajustez la taille du logo selon vos besoins */
+  width: 400px; /* Ajustez la taille du logo selon vos besoins */
 }
 
 .right-section {
-display: flex;
-justify-content: flex-start; /* Aligner le contenu à gauche */
-align-items: flex-end; /* Aligner le contenu en bas */
-margin-left: 20px; /* Marge à gauche */
+  display: flex;
+  justify-content: flex-start; /* Aligner le contenu à gauche */
+  align-items: flex-end; /* Aligner le contenu en bas */
+  margin-left: 20px; /* Marge à gauche */
 }
 
 .auth-container {
-text-align: center;
+  text-align: center;
 }
 
 .button {
-position: absolute;
-top: 570px; /* Déplace le bouton vers le haut */
-left: 380px; /* Déplace le bouton vers la gauche */
-background-color: #134873;
-color: white;
-border: none;
-padding: 10px 20px;
-border-radius: 5px;
-cursor: pointer;
-height: 50px; /* Hauteur du bouton */
-width: 250px; /* Largeur du bouton */
-transition: background-color 0.3s;
+  position: absolute;
+  top: 650px; /* Déplace le bouton vers le haut */
+  left: 400px; /* Déplace le bouton vers la gauche */
+  background-color: #134873;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  height: 50px; /* Hauteur du bouton */
+  width: 250px; /* Largeur du bouton */
+  transition: background-color 0.3s;
 }
 
-
 .button:hover {
-background-color: #005a9e;
+  background-color: #005a9e;
 }
 
 .button-content {
-display: flex;
-align-items: center;
+  display: flex;
+  align-items: center;
 }
 
 .microsoft-logo {
-height: 30px;
-margin-right: 15px;
+  height: 30px;
+  margin-right: 15px;
 }

@@ -16,7 +16,8 @@ import {
   DialogActions,
   TextField,
 } from "@mui/material";
-import { makeStyles } from "@mui/styles"; // Ajout de l'import pour makeStyles
+import { makeStyles } from "@mui/styles";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -51,6 +52,7 @@ const ApprobationTimesheetCollaborateur = () => {
   const [showCommentField, setShowCommentField] = useState(false);
   const [error, setError] = useState(null); // Définir l'état error
   const classes = useStyles();
+  const navigate = useNavigate(); // Use useNavigate for navigation
 
   useEffect(() => {
     const fetchTimesheets = async () => {
@@ -69,9 +71,11 @@ const ApprobationTimesheetCollaborateur = () => {
   const handleDetailClick = async (timesheet) => {
     setSelectedTimesheet(timesheet);
     try {
+      // Use the email from the timesheet object to fetch details
       const response = await axios.get(
-        `https://localhost:44352/api/Timesheet/${timesheet.timesheetId}?email=${timesheet.email}`
+        `https://localhost:44352/api/Timesheet/GetTimesheet?id=${timesheet.timesheetId}&email=${encodeURIComponent(timesheet.email)}`
       );
+      console.log("email",timesheet.email);
       setSelectedTimesheet({
         ...response.data,
         consommation: response.data.TotalConsumed,
@@ -79,13 +83,11 @@ const ApprobationTimesheetCollaborateur = () => {
       setOpenDetails(true);
     } catch (error) {
       setError("Erreur lors de la récupération des détails du timesheet");
-      console.error(
-        "Erreur lors de la récupération des détails du timesheet :",
-        error
-      );
+      console.error("Erreur lors de la récupération des détails du timesheet :", error);
     }
   };
-
+  
+  
   const handleAccept = async () => {
     // Logique pour accepter le timesheet
     console.log("Timesheet accepté");
@@ -126,7 +128,6 @@ const ApprobationTimesheetCollaborateur = () => {
               <TableCell>Date d'envoi</TableCell>
               <TableCell>Statut</TableCell>
               <TableCell>Email</TableCell>
-          
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -138,12 +139,11 @@ const ApprobationTimesheetCollaborateur = () => {
                 <TableCell>{timesheet.dateEnvoie}</TableCell>
                 <TableCell>{timesheet.statut}</TableCell>
                 <TableCell>{timesheet.email}</TableCell>
-              
                 <TableCell>
                   <Button
                     variant="contained"
                     color="primary"
-                    onClick={() => handleDetailClick(timesheet)}
+                    onClick={() => navigate('/feuille', { state: { timesheet } })}
                   >
                     Voir détails
                   </Button>
@@ -170,10 +170,11 @@ const ApprobationTimesheetCollaborateur = () => {
                   <TableCell>Description Devops</TableCell>
                   <TableCell>Original Estimate</TableCell>
                   <TableCell>Consomee</TableCell>
+                  <TableCell>Tracages</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {selectedTimesheet?.workItems.map((task) => (
+                {selectedTimesheet?.workItems?.map((task) => (
                   <TableRow key={task.id}>
                     <TableCell>{task.id}</TableCell>
                     <TableCell>{task.belongTo}</TableCell>
@@ -184,6 +185,13 @@ const ApprobationTimesheetCollaborateur = () => {
                     <TableCell>{task.descriptionDevops}</TableCell>
                     <TableCell>{task.originalEstimate}</TableCell>
                     <TableCell>{task.consomee}</TableCell>
+                    <TableCell>
+                      {task.tracages?.map((tracage) => (
+                        <div key={tracage.entryId}>
+                          {tracage.hours} hours on {tracage.day}/{tracage.month}/{tracage.year}
+                        </div>
+                      ))}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -202,22 +210,21 @@ const ApprobationTimesheetCollaborateur = () => {
           </Button>
         </DialogActions>
       </Dialog>
-      {/* Champ de commentaire séparé */}
       <Dialog
         open={showCommentField}
         onClose={handleCloseComment}
-        maxWidth="md" // Taille de la boîte de dialogue
+        maxWidth="md"
         fullWidth
       >
         <DialogTitle>Ajouter un commentaire</DialogTitle>
         <DialogContent>
           <TextField
             multiline
-            rows={8} // Augmentation du nombre de lignes
+            rows={8}
             fullWidth
             variant="outlined"
             placeholder="Ajouter un commentaire"
-            value={comment} // Utilisation de la valeur du commentaire
+            value={comment}
             onChange={(e) => handleCommentChange(e.target.value)}
           />
         </DialogContent>

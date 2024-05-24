@@ -34,7 +34,7 @@ import axios from 'axios';
 
 const userInfo = JSON.parse(localStorage.getItem("currentUser"));
 
-const Feuille = () => {
+const FeuilleDetails = () => {
   const { instance } = useMsal();
   const navigate = useNavigate();
   const theme = useTheme();
@@ -60,6 +60,8 @@ const Feuille = () => {
   const [currentWeekStart, setCurrentWeekStart] = useState(
     startOfWeek(new Date(), { weekStartsOn: 1 })
   );
+  const [openRejectDialog, setOpenRejectDialog] = useState(false);
+  const [rejectComment, setRejectComment] = useState("");
 
   useEffect(() => {
     fetchWorkItems();
@@ -130,8 +132,9 @@ const Feuille = () => {
       const accounts = await instance.getAllAccounts();
       if (accounts.length > 0) {
         const email = accounts[0].username;
-        const response = await axios.get(`https://localhost:44352/api/WorkItem/withtracages?email=${encodeURIComponent(email)}`);
+        const response = await axios.get(`https://localhost:44352/api/WorkItem/withtracages?email=mahmoud.kchaou@isimsf.u-sfax.tn`);
         const workItems = response.data;
+        console.log("---",)
         fetchTracages(workItems, email);
       }
     } catch (error) {
@@ -548,7 +551,7 @@ const Feuille = () => {
       field: "back",
       headerName: "Précédent",
       renderHeader: () => (
-        <IconButton style={{ color: theme.palette.text.primary }} onClick={handlePreviousWeek}>
+        <IconButton style={{ color: "black" }} onClick={handlePreviousWeek}>
           <KeyboardDoubleArrowLeftIcon />
         </IconButton>
       ),
@@ -572,7 +575,7 @@ const Feuille = () => {
             type="number"
             value={params.row[dayName] || ""}
             onChange={(event) => handleHourChange(event, params.row.id, dayName)}
-            style={{ width: "50px", padding: "0px", fontSize: "14px", border: "1px solid", borderColor: theme.palette.text.primary, outline: "none", color: theme.palette.text.primary, backgroundColor: theme.palette.background.default }}
+            style={{ width: "50px", padding: "0px", fontSize: "14px", border: "", outline: "none" }}
           />
           <IconButton onClick={() => handleOpenAttachmentDialog(params.row.id)}>
             <InfoTwoToneIcon style={{ color: "grey" }} />
@@ -586,7 +589,7 @@ const Feuille = () => {
     field: "next",
     headerName: "Suivant",
     renderHeader: () => (
-      <IconButton onClick={handleNextWeek} style={{ color: theme.palette.text.primary }}>
+      <IconButton onClick={handleNextWeek} style={{ color: "black" }}>
         <KeyboardDoubleArrowRightIcon />
       </IconButton>
     ),
@@ -606,11 +609,42 @@ const Feuille = () => {
     }
   };
 
+  const handleAcceptTimesheet = async (timesheetId) => {
+    try {
+      const response = await axios.post(`https://localhost:44352/api/Timesheet/accept/${timesheetId}`);
+      console.log('Timesheet accepted:', response.data);
+    } catch (error) {
+      console.error('Error accepting timesheet:', error);
+    }
+  };
+
+  const handleRejectTimesheet = () => {
+    setOpenRejectDialog(true);
+  };
+
+  const handleCloseRejectDialog = () => {
+    setOpenRejectDialog(false);
+  };
+
+  const handleRejectCommentChange = (event) => {
+    setRejectComment(event.target.value);
+  };
+
+  const handleSubmitRejectComment = async (timesheetId) => {
+    try {
+      const response = await axios.post(`https://localhost:44352/api/Timesheet/reject/${timesheetId}`, { comment: rejectComment });
+      console.log('Timesheet rejected:', response.data);
+      handleCloseRejectDialog();
+    } catch (error) {
+      console.error('Error rejecting timesheet:', error);
+    }
+  };
+
   return (
     <>
-      <div style={styles.container(theme)}>
+      <div style={styles.container}>
         <Typography variant="h6" align="center" style={{ marginBottom: "20px" }}>
-          Time Sheet - {userName} - {currentDateFormatted} - {currentTime}
+          Time Sheet Details - {currentDateFormatted} - {currentTime}
         </Typography>
         <Snackbar
           open={showSuccessMessage}
@@ -651,8 +685,8 @@ const Feuille = () => {
             }}
             sx={{
               '& .MuiDataGrid-columnHeaders': {
-                backgroundColor: theme.palette.background.paper,
-                color: theme.palette.text.primary,
+                backgroundColor: '#f0f0f0',
+                color: '#555',
               },
               '& .MuiDataGrid-columnHeaderTitle': {
                 fontWeight: 'bold',
@@ -662,7 +696,6 @@ const Feuille = () => {
               },
               '& .MuiDataGrid-cell': {
                 borderBottom: 'none',
-                color: theme.palette.text.primary,
               },
             }}
           />
@@ -763,21 +796,63 @@ const Feuille = () => {
             </Button>
           </DialogActions>
         </Dialog>
+
+        <Dialog open={openRejectDialog} onClose={handleCloseRejectDialog}>
+          <DialogTitle>Refuser Timesheet</DialogTitle>
+          <DialogContent>
+            <TextField
+              margin="dense"
+              label="Commentaire"
+              fullWidth
+              value={rejectComment}
+              onChange={handleRejectCommentChange}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseRejectDialog} sx={{ backgroundColor: '#046C92', color: 'white' }}>
+              Annuler
+            </Button>
+            <Button 
+              onClick={handleSubmitRejectComment} 
+              color="primary"
+              sx={{ backgroundColor: '#046C92', color: 'white' }}
+            >
+              Envoyer
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        <div style={{ display: "flex", justifyContent: "center", marginTop: "20px" }}>
+          <Button
+            onClick={handleAcceptTimesheet}
+            color="primary"
+            sx={{ backgroundColor: '#046C92', color: 'white', marginRight: "20px" }}
+          >
+            Accepter
+          </Button>
+          <Button
+            onClick={handleRejectTimesheet}
+            color="primary"
+            sx={{ backgroundColor: '#D32F2F', color: 'white' }}
+          >
+            Refuser
+          </Button>
+        </div>
       </div>
     </>
   );
 };
 
 const styles = {
-  container: (theme) => ({
+  container: {
     fontFamily: "Arial, sans-serif",
     margin: "20px",
     padding: "20px",
-    backgroundColor: theme.palette.background.paper,
-    border: `1px solid ${theme.palette.divider}`,
+    backgroundColor: "#f9f9f9",
+    border: "1px solid #ddd",
     borderRadius: "8px",
     boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-  }),
+  },
   chipNew: {
     backgroundColor: "#E0F7FA",
     color: "#036B91",
@@ -808,4 +883,4 @@ const styles = {
   },
 };
 
-export default Feuille;
+export default FeuilleDetails;

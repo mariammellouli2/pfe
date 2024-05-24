@@ -1,54 +1,108 @@
-/* Styles for Drawer */
 .drawer {
-    width: 240px;
-    flex-shrink: 0;
-    white-space: nowrap;
-    overflow-x: hidden;
-    transition: width 0.3s ease-in-out;
-    background-color: #fff; /* Ajout d'une couleur de fond */
-    color: #000; /* Couleur du texte */
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); /* Ombre légère */
-  }
+  position: relative;
+  background-color: white;
+  color: #0E3A5D;
+  font-family: 'Roboto, sans-serif';  /* Use Roboto font */
+}
 
-  /* Styles for List in Drawer */
-  .drawer .MuiList-root {
-    padding: 0;
-  }
+.drawerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 8px;
+  min-height: 64px;
+  background-color: white;
+  color: #0E3A5D;
+  font-family: 'Roboto, sans-serif';  /* Use Roboto font */
+}
 
-  /* Styles for List Items in Drawer */
-  .drawer .MuiListItem-root {
-    min-height: 48px;
-    padding: 12px 16px;
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    transition: background-color 0.3s ease-in-out;
-  }
-  
-  /* Hover State for List Items */
-  .drawer .MuiListItem-root:hover {
-    background-color: rgba(0, 0, 0, 0.04);
-  }
-  
-  /* Styles for Icons in List Items */
-  .drawer .MuiListItemIcon-root {
-    min-width: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  /* Styles for Text in List Items */
-  .drawer .MuiListItemText-root {
-    flex: 1;
-    margin-left: 16px;
-  }
-  
-  /* Styles for Buttons in List Items */
-  .drawer .MuiButtonBase-root {
-    min-width: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
+.avatar {
+  margin: 16px auto;
+  width: 88px;
+  height: 88px;
+  border: 2px solid grey;
+  transition: 0.25s;
+}
+
+.avatarSmall {
+  width: 44px;
+  height: 44px;
+}
+
+.username {
+  text-align: center;
+  font-size: 17px;
+  transition: 0.25s;
+  font-family: 'Roboto, sans-serif';  /* Use Roboto font */
+}
+
+.role {
+  text-align: center;
+  font-size: 14px;
+  color: #2196f3;
+  transition: 0.25s;
+  font-family: 'Roboto, sans-serif';  /* Use Roboto font */
+}
+
+.listItemButton {
+  min-height: 48px;
+  justify-content: initial;
+  padding: 0 20px;
+  color: #0E3A5D;
+  transition: background-color 0.3s, color 0.3s;
+  font-family: 'Roboto, sans-serif';  /* Use Roboto font */
+}
+
+.listItemButton:hover {
+  background-color: #e0f7fa;
+  color: #0E3A5D;
+}
+
+.listItemButtonClosed {
+  justify-content: center;
+}
+
+.listItemIcon {
+  min-width: 0;
+  margin-right: 24px;
+  justify-content: center;
+  color: #0E3A5D;
+  transition: color 0.3s;
+}
+
+.listItemIconClosed {
+  margin-right: auto;
+}
+
+.listItemText {
+  opacity: 1;
+  transition: opacity 0.25s;
+  font-family: 'Roboto, sans-serif';  /* Use Roboto font */
+}
+
+.listItemTextClosed {
+  opacity: 0;
+}
+
+.menuButton {
+  margin-left: 8px;
+  color: #0E3A5D;
+}
+
+.chevronButton {
+  margin: 16px;
+  color: #0E3A5D;
+}
+
+.selected {
+  background-color: #E3E4E3 !important;
+  color: #0E3A5D !important;
+}
+
+.selectedIcon {
+  color: #0E3A5D !important;
+}
+
+.selectedText {
+  color: #0E3A5D !important;
+}

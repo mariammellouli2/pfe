@@ -15,32 +15,79 @@ import {
   DialogContent,
   DialogActions,
   TextField,
+  IconButton,
+  Box,
+  Modal
 } from "@mui/material";
 import { makeStyles } from "@mui/styles";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import CloseIcon from '@mui/icons-material/Close';
+import { useNavigate } from "react-router-dom";
 
 const useStyles = makeStyles(() => ({
   paper: {
     margin: '24px',
     padding: '24px',
-  },
-  table: {
-    minWidth: 650,
-  },
-  tableHead: {
-    backgroundColor: '#bdbdbd', // Gris pour l'en-tête
-  },
-  tableHeadCell: {
-    color: 'white',
-    fontWeight: 'bold',
-  },
-  tableRow: {
-    '&:nth-of-type(odd)': {
-      backgroundColor: '#f5f5f5',
-    },
+    backgroundColor: 'white',
+    boxShadow: 'none',
   },
   title: {
-    marginBottom: '24px',
+    marginBottom: '40px',
+    color: '#046C92',
+    fontWeight: 'bold',
+    textAlign: 'center',
+    textTransform: 'uppercase',
+    letterSpacing: '1.2px',
+    fontFamily: 'Arial, sans-serif',
+  },
+  buttonContained: {
+    backgroundColor: '#046C92',
+    color: '#fff',
+    '&:hover': {
+      backgroundColor: '#035a74',
+    },
+    marginBottom: '16px',
+  },
+  modalBox: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: '80%',
+    maxHeight: '80vh',
+    overflowY: 'auto',
+    backgroundColor: '#f5f5f5',
+    boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.15)',
+    padding: '32px',
+    borderRadius: '8px',
+  },
+  closeModalButton: {
+    position: 'absolute',
+    top: '8px',
+    right: '8px',
+  },
+  buttonPrimary: {
+    backgroundColor: '#A1B848',
+    color: 'white',
+    '&:hover': {
+      backgroundColor: '#8a9e3b',
+    },
+  },
+  buttonSecondary: {
+    backgroundColor: '#F07304',
+    color: 'white',
+    '&:hover': {
+      backgroundColor: '#c36203',
+    },
+  },
+  dialogTitle: {
+    backgroundColor: '#399BBD',
+    color: 'white',
+  },
+  dialogContent: {
+    backgroundColor: '#f5f5f5',
+  },
+  dialogActions: {
+    backgroundColor: '#f5f5f5',
   },
 }));
 
@@ -50,9 +97,9 @@ const ApprobationTimesheetCollaborateur = () => {
   const [openDetails, setOpenDetails] = useState(false);
   const [comment, setComment] = useState("");
   const [showCommentField, setShowCommentField] = useState(false);
-  const [error, setError] = useState(null); // Définir l'état error
+  const [error, setError] = useState(null);
   const classes = useStyles();
-  const navigate = useNavigate(); // Use useNavigate for navigation
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchTimesheets = async () => {
@@ -69,175 +116,169 @@ const ApprobationTimesheetCollaborateur = () => {
   }, []);
 
   const handleDetailClick = async (timesheet) => {
-    setSelectedTimesheet(timesheet);
-    try {
-      // Use the email from the timesheet object to fetch details
-      const response = await axios.get(
-        `https://localhost:44352/api/Timesheet/GetTimesheet?id=${timesheet.timesheetId}&email=${encodeURIComponent(timesheet.email)}`
-      );
-      console.log("email",timesheet.email);
-      setSelectedTimesheet({
-        ...response.data,
-        consommation: response.data.TotalConsumed,
-      });
-      setOpenDetails(true);
-    } catch (error) {
-      setError("Erreur lors de la récupération des détails du timesheet");
-      console.error("Erreur lors de la récupération des détails du timesheet :", error);
-    }
+    navigate('/feuille/details')
+    // setSelectedTimesheet(timesheet);
+    // try {
+    //   const response = await axios.get(
+    //     `https://localhost:44352/api/Timesheet/GetTimesheet?id=${timesheet.timesheetId}&email=${encodeURIComponent(timesheet.UserId)}`
+    //   );
+    //   setSelectedTimesheet({
+    //     ...response.data,
+    //     consommation: response.data.TotalConsumed,
+    //   });
+    //   setOpenDetails(true);
+    // } catch (error) {
+    //   setError("Erreur lors de la récupération des détails du timesheet");
+    //   console.error("Erreur lors de la récupération des détails du timesheet :", error);
+    // }
   };
-  
-  
+
   const handleAccept = async () => {
-    // Logique pour accepter le timesheet
     console.log("Timesheet accepté");
   };
 
   const handleReject = async () => {
-    // Logique pour refuser le timesheet
     console.log("Timesheet refusé");
-    setShowCommentField(true); // Affiche le champ de commentaire
+    setShowCommentField(true);
   };
 
   const handleCommentChange = (value) => {
-    setComment(value); // Mettre à jour le commentaire
+    setComment(value);
   };
 
   const handleCommentSubmit = () => {
-    // Logique pour soumettre le commentaire
     console.log("Commentaire soumis :", comment);
-    setShowCommentField(false); // Cache le champ de commentaire
-    setComment(""); // Efface le commentaire après soumission
+    setShowCommentField(false);
+    setComment("");
   };
 
   const handleCloseComment = () => {
-    setShowCommentField(false); // Cache le champ de commentaire
+    setShowCommentField(false);
   };
-
   return (
-    <div>
-      <Typography variant="h4" gutterBottom className={classes.title}>
+    <>
+      <Typography variant="h4" className={classes.title}>
         Liste des Timesheets à Approuver
       </Typography>
-      <TableContainer component={Paper}>
-        <Table className={classes.table}>
-          <TableHead className={classes.tableHead}>
-            <TableRow>
-              <TableCell>Id feuille</TableCell>
-              <TableCell>Date de la feuille</TableCell>
-              <TableCell>Date d'envoi</TableCell>
-              <TableCell>Statut</TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {timesheets.map((timesheet) => (
-              <TableRow key={timesheet.timesheetId} className={classes.tableRow}>
-                <TableCell>{timesheet.timesheetId}</TableCell>
-                <TableCell>{timesheet.dateFeuille}</TableCell>
-                <TableCell>{timesheet.dateEnvoie}</TableCell>
-                <TableCell>{timesheet.statut}</TableCell>
-                <TableCell>{timesheet.email}</TableCell>
-                <TableCell>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => navigate('/feuille', { state: { timesheet } })}
-                  >
-                    Voir détails
-                  </Button>
-                </TableCell>
+      <Paper className={classes.paper}>
+        <TableContainer className={classes.tableContainer}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell align="centre">Id feuille</TableCell>
+                <TableCell>Date de la feuille</TableCell>
+                <TableCell>Date d'envoi</TableCell>
+                <TableCell>Statut</TableCell>
+                <TableCell >Email</TableCell>
+                <TableCell>Actions</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      <Dialog open={openDetails} onClose={() => setOpenDetails(false)} maxWidth="lg" fullWidth>
-        <DialogTitle>Détails du Timesheet</DialogTitle>
-        <DialogContent dividers>
-          {/* Autres en-têtes */}
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>ID Tâche</TableCell>
-                  <TableCell>Belong To</TableCell>
-                  <TableCell>Work Item Type</TableCell>
-                  <TableCell>Title Devops</TableCell>
-                  <TableCell>Assigned To</TableCell>
-                  <TableCell>State</TableCell>
-                  <TableCell>Description Devops</TableCell>
-                  <TableCell>Original Estimate</TableCell>
-                  <TableCell>Consomee</TableCell>
-                  <TableCell>Tracages</TableCell>
+            </TableHead>
+            <TableBody>
+              {timesheets.map((timesheet) => (
+                <TableRow key={timesheet.timesheetId}>
+                  <TableCell>{timesheet.timesheetId}</TableCell>
+                  <TableCell>{timesheet.dateFeuille}</TableCell>
+                  <TableCell>{timesheet.dateEnvoie}</TableCell>
+                  <TableCell>{timesheet.statut}</TableCell>
+                  <TableCell>{timesheet.email}</TableCell>
+                  <TableCell>
+                    <Button
+                      variant="contained"
+                      className={classes.buttonContained}
+                      style={{ backgroundColor: '#046C92', color: 'white' }}
+                      onClick={() => handleDetailClick(timesheet)}
+                    >
+                      Voir détails
+                    </Button>
+                  </TableCell>
                 </TableRow>
-              </TableHead>
-              <TableBody>
-                {selectedTimesheet?.workItems?.map((task) => (
-                  <TableRow key={task.id}>
-                    <TableCell>{task.id}</TableCell>
-                    <TableCell>{task.belongTo}</TableCell>
-                    <TableCell>{task.workItemType}</TableCell>
-                    <TableCell>{task.titleDevops}</TableCell>
-                    <TableCell>{task.assignedTo}</TableCell>
-                    <TableCell>{task.state}</TableCell>
-                    <TableCell>{task.descriptionDevops}</TableCell>
-                    <TableCell>{task.originalEstimate}</TableCell>
-                    <TableCell>{task.consomee}</TableCell>
-                    <TableCell>
-                      {task.tracages?.map((tracage) => (
-                        <div key={tracage.entryId}>
-                          {tracage.hours} hours on {tracage.day}/{tracage.month}/{tracage.year}
-                        </div>
-                      ))}
-                    </TableCell>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+        <Modal open={openDetails} onClose={() => setOpenDetails(false)}>
+          <Box className={classes.modalBox}>
+            <Typography variant="h4" gutterBottom>
+              Détails du Timesheet
+            </Typography>
+            <TableContainer>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>ID Tâche</TableCell>
+                    <TableCell>Belong To</TableCell>
+                    <TableCell>Work Item Type</TableCell>
+                    <TableCell>Title Devops</TableCell>
+                    <TableCell>Assigned To</TableCell>
+                    <TableCell>State</TableCell>
+                    <TableCell>Description Devops</TableCell>
+                    <TableCell>Original Estimate</TableCell>
+                    <TableCell>Consomee</TableCell>
+                    <TableCell>Tracages</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </DialogContent>
-        <DialogActions>
-          <Button variant="contained" color="primary" onClick={handleAccept}>
-            Accepter
-          </Button>
-          <Button variant="contained" color="secondary" onClick={handleReject}>
-            Refuser
-          </Button>
-          <Button variant="contained" onClick={() => setOpenDetails(false)}>
-            Fermer
-          </Button>
-        </DialogActions>
-      </Dialog>
-      <Dialog
-        open={showCommentField}
-        onClose={handleCloseComment}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle>Ajouter un commentaire</DialogTitle>
-        <DialogContent>
-          <TextField
-            multiline
-            rows={8}
-            fullWidth
-            variant="outlined"
-            placeholder="Ajouter un commentaire"
-            value={comment}
-            onChange={(e) => handleCommentChange(e.target.value)}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button variant="contained" color="primary" onClick={handleCommentSubmit}>
-            Soumettre
-          </Button>
-          <Button variant="contained" onClick={handleCloseComment}>
-            Annuler
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </div>
+                </TableHead>
+                <TableBody>
+                  {selectedTimesheet?.workItems?.map((task) => (
+                    <TableRow key={task.id}>
+                      <TableCell>{task.id}</TableCell>
+                      <TableCell>{task.belongTo}</TableCell>
+                      <TableCell>{task.workItemType}</TableCell>
+                      <TableCell>{task.titleDevops}</TableCell>
+                      <TableCell>{task.assignedTo}</TableCell>
+                      <TableCell>{task.state}</TableCell>
+                      <TableCell>{task.descriptionDevops}</TableCell>
+                      <TableCell>{task.originalEstimate}</TableCell>
+                      <TableCell>{task.consomee}</TableCell>
+                      <TableCell>
+                        {task.tracages.map((tracage) => (
+                          <div key={tracage.id}>
+                            {tracage.date} - {tracage.hours} hours
+                          </div>
+                        ))}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            <Dialog open={showCommentField} onClose={handleCloseComment}>
+              <DialogTitle className={classes.dialogTitle}>Ajouter un commentaire</DialogTitle>
+              <DialogContent className={classes.dialogContent}>
+                <TextField
+                  label="Commentaire"
+                  fullWidth
+                  variant="outlined"
+                  value={comment}
+                  onChange={(e) => handleCommentChange(e.target.value)}
+                />
+              </DialogContent>
+              <DialogActions className={classes.dialogActions}>
+                <Button onClick={handleCloseComment} color="secondary" variant="contained">
+                  Annuler
+                </Button>
+                <Button onClick={handleCommentSubmit} color="primary" variant="contained">
+                  Soumettre
+                </Button>
+              </DialogActions>
+            </Dialog>
+            <IconButton className={classes.closeModalButton} onClick={() => setOpenDetails(false)}>
+              <CloseIcon />
+            </IconButton>
+          </Box>
+        </Modal>
+        <Dialog open={error !== null} onClose={() => setError(null)}>
+          <DialogTitle className={classes.dialogTitle}>Erreur</DialogTitle>
+          <DialogContent className={classes.dialogContent}>
+            <Typography>{error}</Typography>
+          </DialogContent>
+          <DialogActions className={classes.dialogActions}>
+            <Button onClick={() => setError(null)} color="primary" variant="contained">
+              Fermer
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </Paper>
+    </>
   );
 };
 

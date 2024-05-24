@@ -10,7 +10,8 @@ import DarkModeOutlinedIcon from '@mui/icons-material/DarkModeOutlined';
 import LightModeOutlinedIcon from '@mui/icons-material/LightModeOutlined';
 import image from './logo1.png';
 import * as signalR from '@microsoft/signalr';
-import NotificationDropdown from './NotificationDropdown'; // Ensure the path is correct
+import NotificationDropdown from './NotificationDropdown';
+import { useThemeContext } from './Theme'; // Assurez-vous que le chemin est correct
 
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',
@@ -69,13 +70,13 @@ const AppBar = styled(MuiAppBar, {
       duration: theme.transitions.duration.enteringScreen,
     }),
   }),
-  backgroundColor: theme.palette.mode === 'light' ? '#0E3A5D' : '#ffffff',
+  backgroundColor: theme.palette.mode === 'light' ? '#0E3A5D' : theme.palette.background.paper,
 }));
 
 const TopBar = () => {
   const [sticky, setSticky] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
-  const [darkMode, setDarkMode] = useState(localStorage.getItem('currentMode') === 'dark');
+  const { mode, toggleMode } = useThemeContext();
   const [notifications, setNotifications] = useState([]);
   const navigate = useNavigate();
   const { instance } = useMsal();
@@ -119,12 +120,6 @@ const TopBar = () => {
     });
   };
 
-  const handleModeChange = () => {
-    const newMode = darkMode ? 'light' : 'dark';
-    localStorage.setItem('currentMode', newMode);
-    setDarkMode(!darkMode);
-  };
-
   const handleMenuClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
@@ -149,8 +144,8 @@ const TopBar = () => {
         </Search>
         <Box flexGrow={1} />
         <Stack direction="row">
-          <IconButton onClick={handleModeChange} color="inherit">
-            {darkMode ? <LightModeOutlinedIcon sx={{ mr: 1 }} /> : <DarkModeOutlinedIcon sx={{ mr: 1 }} />}
+          <IconButton onClick={toggleMode} color="inherit">
+            {mode === 'dark' ? <LightModeOutlinedIcon sx={{ mr: 1 }} /> : <DarkModeOutlinedIcon sx={{ mr: 1 }} />}
           </IconButton>
           <NotificationDropdown notifications={notifications} />
           <IconButton color="inherit">

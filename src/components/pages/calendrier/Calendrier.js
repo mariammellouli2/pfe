@@ -43,16 +43,16 @@ function SidebarEvent({ event, onEdit, onDelete }) {
   return (
     <ListItem key={event.id} css={css`margin-bottom: 8px; display: flex; justify-content: space-between;`}>
       <div>
-        <Typography variant="subtitle1" color="primary">
+        <Typography variant="subtitle1" css={css`color: #348AAB;`}>
           {formatDate(event.start, { year: "numeric", month: "short", day: "numeric" })}
         </Typography>
         <Typography variant="body2">{event.title}</Typography>
       </div>
       <div>
-        <IconButton onClick={() => onEdit(event)}>
+        <IconButton onClick={() => onEdit(event)} css={css`color: #A1B848;`}>
           <EditIcon />
         </IconButton>
-        <IconButton onClick={() => onDelete(event)}>
+        <IconButton onClick={() => onDelete(event)} css={css`color: #F07304;`}>
           <DeleteIcon />
         </IconButton>
       </div>
@@ -196,10 +196,9 @@ const Calendrier = () => {
           </List>
           <Button
             variant="contained"
-            color="primary"
+            css={css`margin-top: 16px; background-color: #348AAB; color: white; &:hover { background-color: #c36203; }`}
             startIcon={<AddIcon />}
             onClick={handleAddEvent}
-            css={css`margin-top: 16px;`}
           >
             Ajouter un événement
           </Button>
@@ -219,14 +218,47 @@ const Calendrier = () => {
             select={handleDateSelect}
             eventClick={handleEventClick}
             events={currentEvents}
-            eventColor="#3182CE"
-            eventBackgroundColor="#63B3ED"
+            eventColor="#348AAB"
+            eventBackgroundColor="#348AAB"
             css={css`
               .fc-toolbar-title {
                 font-size: 1.5rem;
               }
               .fc-daygrid-event {
                 font-size: 1rem;
+                background-color: #348AAB;
+                border-color: #348AAB;
+              }
+              .fc-button {
+                background-color: #348AAB !important;
+                border-color: #348AAB !important;
+                color: white !important;
+              }
+              .fc-button:hover {
+                background-color: #2b6f8c !important;
+                border-color: #2b6f8c !important;
+              }
+              .fc-button-primary {
+                background-color: #399BBD !important;
+                border-color: #399BBD !important;
+                color: white !important;
+              }
+              .fc-button-primary:hover {
+                background-color: #3182CE !important;
+                border-color: #3182CE !important;
+              }
+              .fc-today-button {
+                background-color: #A1B848 !important;
+                border-color: #A1B848 !important;
+                color: white !important;
+              }
+              .fc-today-button:hover {
+                background-color: #8a9e3b !important;
+                border-color: #8a9e3b !important;
+              }
+              .fc-icon-chevron-left,
+              .fc-icon-chevron-right {
+                color: #F07304 !important;
               }
             `}
           />
@@ -250,10 +282,13 @@ const Calendrier = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleDialogClose} color="secondary">
+          <Button onClick={handleDialogClose} css={css`color: #A1B848;`}>
             Annuler
           </Button>
-          <Button onClick={handleDialogSubmit} color="primary">
+          <Button
+            css={css`background-color: #A1B848; color: white; &:hover { background-color: #8a9e3b; }`}
+            onClick={handleDialogSubmit}
+          >
             {dialogInfo.id ? "Modifier" : "Ajouter"}
           </Button>
         </DialogActions>
@@ -273,19 +308,17 @@ const Calendrier = () => {
               </Typography>
               <Button
                 variant="contained"
-                color="primary"
+                css={css`margin-top: 16px; background-color: #348AAB; color: white; &:hover { background-color: #2b6f8c; }`}
                 startIcon={<EditIcon />}
                 onClick={() => handleEditEvent(selectedEvent)}
-                css={css`margin-top: 16px;`}
               >
                 Modifier
               </Button>
               <Button
                 variant="contained"
-                color="secondary"
+                css={css`margin-top: 16px; background-color: #F07304; color: white; &:hover { background-color: #c36203; }`}
                 startIcon={<DeleteIcon />}
                 onClick={() => handleDeleteEvent(selectedEvent)}
-                css={css`margin-top: 16px;`}
               >
                 Supprimer
               </Button>

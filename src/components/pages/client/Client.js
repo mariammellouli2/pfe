@@ -3,17 +3,19 @@ import axios from 'axios';
 import { Table, TableHead, TableBody, TableRow, TableCell, Paper, Typography } from "@mui/material";
 import { makeStyles } from '@mui/styles';
 
-
 const useStyles = makeStyles(() => ({
   paper: {
     margin: '24px',
     padding: '24px',
+    backgroundColor: 'transparent',
+    boxShadow: 'none',
   },
   table: {
     minWidth: 650,
+    backgroundColor: '#fff', // Fond blanc pour le tableau
   },
   tableHead: {
-    backgroundColor: '#bdbdbd', // Gris pour l'en-tête
+    backgroundColor: '#fff', // Gris pour l'en-tête
   },
   tableHeadCell: {
     color: 'white',
@@ -21,11 +23,17 @@ const useStyles = makeStyles(() => ({
   },
   tableRow: {
     '&:nth-of-type(odd)': {
-      backgroundColor: '#f5f5f5',
+      backgroundColor: '##fff', // Couleur de fond alternée pour les lignes impaires
     },
   },
   title: {
-    marginBottom: '24px',
+    marginBottom: '40px',
+    color: '#046C92',
+    fontWeight: 'bold',
+    textAlign: 'center',
+    textTransform: 'uppercase',
+    letterSpacing: '1.2px',
+    fontFamily: 'Arial, sans-serif',
   },
 }));
 
@@ -47,10 +55,14 @@ const ClientTable = () => {
   }, []);
 
   return (
-    <Paper className={classes.paper}>
-      <Typography variant="h4" className={classes.title}>
+
+    <>
+          <Typography variant="h4" className={classes.title}>
         Liste des Clients
       </Typography>
+
+    <Paper className={classes.paper}>
+
       <Table className={classes.table}>
         <TableHead className={classes.tableHead}>
           <TableRow>
@@ -76,6 +88,7 @@ const ClientTable = () => {
         </TableBody>
       </Table>
     </Paper>
+    </>
   );
 };
 

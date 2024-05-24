@@ -27,10 +27,14 @@ import { grey } from '@mui/material/colors';
 import './SideBar.css';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 
+// Import images
+import mariamImage from './mariam.png';
+import mahmoudImage from './mahmoud.png';
+
 const drawerWidth = 240;
 
 const role = localStorage.getItem("role") || "";
-const userInfo =  JSON.parse(localStorage.getItem("currentUser"));
+const userInfo = JSON.parse(localStorage.getItem("currentUser"));
 
 const DrawerHeader = styled('div')(({ theme }) => ({
   display: 'flex',
@@ -40,6 +44,7 @@ const DrawerHeader = styled('div')(({ theme }) => ({
   // necessary for content to be below app bar
   ...theme.mixins.toolbar,
 }));
+
 const openedMixin = (theme) => ({
   width: drawerWidth,
   transition: theme.transitions.create('width', {
@@ -55,9 +60,9 @@ const closedMixin = (theme) => ({
     duration: theme.transitions.duration.leavingScreen,
   }),
   overflowX: 'hidden',
-  width: `calc(${theme.spacing(7)} + 1px)`, // Enclose in backticks for interpolation
+  width: `calc(${theme.spacing(7)} + 1px)`,
   [theme.breakpoints.up('sm')]: {
-    width: `calc(${theme.spacing(8)} + 1px)`, // Enclose in backticks for interpolation
+    width: `calc(${theme.spacing(8)} + 1px)`,
   },
 });
 
@@ -68,7 +73,7 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
     color: '#0E3A5D',
     whiteSpace: 'nowrap',
     boxSizing: 'border-box',
-    backgroundColor: theme.palette.mode === 'light' ? '#0E3A5D' : '#fffff', // Correction ici
+    backgroundColor: theme.palette.mode === 'light' ? '#0E3A5D' : '#ffffff',
     ...(open && {
       ...openedMixin(theme),
       '& .MuiDrawer-paper': openedMixin(theme),
@@ -81,20 +86,17 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 );
 
 const Array1 = [
- 
   { "text": "Feuille", "icon": <PendingActionsOutlinedIcon />, "path": "/feuille" },
 ];
 const Array2 = [
-  { "text": "Approbation", "icon": <InventoryOutlinedIcon />, "path": role =="responsable" ? "/Approbation/Responsable" : "/Approbation/Collaborateur"},
-  { "text": "Projet", "icon": <BallotOutlinedIcon />, "path": role == "responsable" ? "/projet/Responsable" : "/projet/Collaborateur" },
-   { "text": "client", "icon": <PermContactCalendarOutlinedIcon />, "path": role == "responsable" ? "/Client/responsable" : "Client/Collaborateur" }
+  { "text": "Approbation", "icon": <InventoryOutlinedIcon />, "path": role === "responsable" ? "/Approbation/Responsable" : "/Approbation/Collaborateur" },
+  { "text": "Projet", "icon": <BallotOutlinedIcon />, "path": role === "responsable" ? "/projet/Responsable" : "/projet/Collaborateur" },
+  { "text": "Client", "icon": <PermContactCalendarOutlinedIcon />, "path": role === "responsable" ? "/Client/responsable" : "Client/Collaborateur" }
 ];
 const Array3 = [
   { "text": "Calendrier", "icon": <CalendarMonthIcon />, "path": "/Calendrier" },
-  { "text": "Dashboard", "icon": <BarChartOutlinedIcon />, "path": role == "responsable" ? "/Dashboard": "" }
+  { "text": "Dashboard", "icon": <BarChartOutlinedIcon />, "path": role === "responsable" ? "/Dashboard" : "" }
 ];
-
- 
 const Array4 = [
   { "text": "Parametrage", "icon": <SettingsOutlinedIcon />, "path": "/Parametrage" },
 ];
@@ -113,8 +115,15 @@ const SideBar = () => {
     setOpen(false);
   };
 
+  const getAvatarSrc = () => {
+    if (userInfo?.email === "mallouli.mariam@isimsf.u-sfax.tn") {
+      return mahmoudImage; // Replace with the actual path to Mariam Mallouli's photo
+    }
+    return mariamImage; // Default photo path
+  };
+
   return (
-    <Drawer style={{position:'relative'}} variant="permanent" open={open}>
+    <Drawer style={{ position: 'relative' }} variant="permanent" open={open}>
       <DrawerHeader />
       <IconButton
         color="inherit"
@@ -128,36 +137,44 @@ const SideBar = () => {
       >
         <MenuIcon />
       </IconButton>
-     {open && (
-          <IconButton onClick={() => setOpen(false)}>
-            {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
-          </IconButton>
-        )}
+      {open && (
+        <IconButton onClick={() => setOpen(false)}>
+          {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+        </IconButton>
+      )}
+<Avatar 
+  sx={{
+    mx: "auto",
+    width: open ? 80 : 50, // Augmenter la taille
+    height: open ? 80 : 50, // Augmenter la taille
+    my: 1,
+    transition: "0.25s",
+    '& img': {
+      objectFit: 'contain', // Assure que l'image est ajustée sans être coupée
+      width: '100%', // S'assure que l'image prend toute la largeur de l'avatar
+      height: '100%', // S'assure que l'image prend toute la hauteur de l'avatar
+    }
+  }}
+  alt={userInfo?.name}
+  src={getAvatarSrc()}
+/>
 
-      <Avatar sx={{
-        mx: "auto",
-        width: open ? 88 : 44,
-        height: open ? 88 : 44,
-        my: 1,
-        border: "2px solid grey",
-        transition: "0.25s"
-      }}
-        alt="Remy Sharp"
-        src="/static/images/avatar/1.jpg" />
-      <Typography align="center" sx={{ fontSize: open ? 17 : 0, transition: "0.25s" }} > {userInfo?.name} </Typography>
-      <Typography align="center" sx={{ fontSize: open ? 14 : 0, transition: "0.25s", color: theme.palette.info.main }} > {role}  </Typography>
+
+      <Typography align="center" sx={{ fontSize: open ? 17 : 0, transition: "0.25s", fontFamily: 'Roboto, sans-serif' }} > {userInfo?.name} </Typography>
+      <Typography align="center" sx={{ fontSize: open ? 14 : 0, transition: "0.25s", color: theme.palette.info.main, fontFamily: 'Roboto, sans-serif' }} > {role} </Typography>
       <List>
         {Array1.map((item) => (
           <ListItem key={item.path} disablePadding sx={{ display: 'block' }}>
             <ListItemButton
               onClick={() => {
-                navigate(item.path)
+                navigate(item.path);
               }}
               sx={{
                 minHeight: 48,
                 justifyContent: open ? 'initial' : 'center',
                 px: 2.5,
-                bgcolor :  location.pathname === item.path?  theme.palette.mode === "dark" ? grey[800]: grey[400]  : null 
+                bgcolor: location.pathname === item.path ? '#E3E4E3' : null,
+                fontFamily: 'Roboto, sans-serif',
               }}
             >
               <ListItemIcon
@@ -165,11 +182,12 @@ const SideBar = () => {
                   minWidth: 0,
                   mr: open ? 3 : 'auto',
                   justifyContent: 'center',
+                  color: location.pathname === item.path ? '#0E3A5D' : 'inherit',
                 }}
               >
                 {item.icon}
               </ListItemIcon>
-              <ListItemText primary={item.text} sx={{ opacity: open ? 1 : 0 }} />
+              <ListItemText primary={item.text} sx={{ opacity: open ? 1 : 0, fontFamily: 'Roboto, sans-serif' }} />
             </ListItemButton>
           </ListItem>
         ))}
@@ -180,13 +198,14 @@ const SideBar = () => {
           <ListItem key={item.path} disablePadding sx={{ display: 'block' }}>
             <ListItemButton
               onClick={() => {
-                navigate(item.path)
+                navigate(item.path);
               }}
               sx={{
                 minHeight: 48,
                 justifyContent: open ? 'initial' : 'center',
                 px: 2.5,
-                bgcolor :  location.pathname === item.path?  theme.palette.mode === "dark" ? grey[800]: grey[400]  : null 
+                bgcolor: location.pathname === item.path ? '#E3E4E3' : null,
+                fontFamily: 'Roboto, sans-serif',
               }}
             >
               <ListItemIcon
@@ -194,11 +213,12 @@ const SideBar = () => {
                   minWidth: 0,
                   mr: open ? 3 : 'auto',
                   justifyContent: 'center',
+                  color: location.pathname === item.path ? '#0E3A5D' : 'inherit',
                 }}
               >
                 {item.icon}
               </ListItemIcon>
-              <ListItemText primary={item.text} sx={{ opacity: open ? 1 : 0 }} />
+              <ListItemText primary={item.text} sx={{ opacity: open ? 1 : 0, fontFamily: 'Roboto, sans-serif' }} />
             </ListItemButton>
           </ListItem>
         ))}
@@ -209,13 +229,14 @@ const SideBar = () => {
           <ListItem key={item.path} disablePadding sx={{ display: 'block' }}>
             <ListItemButton
               onClick={() => {
-                navigate(item.path)
+                navigate(item.path);
               }}
               sx={{
                 minHeight: 48,
                 justifyContent: open ? 'initial' : 'center',
                 px: 2.5,
-                bgcolor :  location.pathname === item.path?  theme.palette.mode === "dark" ? grey[800]: grey[400]  : null 
+                bgcolor: location.pathname === item.path ? '#E3E4E3' : null,
+                fontFamily: 'Roboto, sans-serif',
               }}
             >
               <ListItemIcon
@@ -223,11 +244,12 @@ const SideBar = () => {
                   minWidth: 0,
                   mr: open ? 3 : 'auto',
                   justifyContent: 'center',
+                  color: location.pathname === item.path ? '#0E3A5D' : 'inherit',
                 }}
               >
                 {item.icon}
               </ListItemIcon>
-              <ListItemText primary={item.text} sx={{ opacity: open ? 1 : 0 }} />
+              <ListItemText primary={item.text} sx={{ opacity: open ? 1 : 0, fontFamily: 'Roboto, sans-serif' }} />
             </ListItemButton>
           </ListItem>
         ))}
@@ -238,13 +260,14 @@ const SideBar = () => {
           <ListItem key={item.path} disablePadding sx={{ display: 'block' }}>
             <ListItemButton
               onClick={() => {
-                navigate(item.path)
+                navigate(item.path);
               }}
               sx={{
                 minHeight: 48,
                 justifyContent: open ? 'initial' : 'center',
                 px: 2.5,
-                bgcolor :  location.pathname === item.path?  theme.palette.mode === "dark" ? grey[800]: grey[400]  : null 
+                bgcolor: location.pathname === item.path ? '#E3E4E3' : null,
+                fontFamily: 'Roboto, sans-serif',
               }}
             >
               <ListItemIcon
@@ -252,11 +275,12 @@ const SideBar = () => {
                   minWidth: 0,
                   mr: open ? 3 : 'auto',
                   justifyContent: 'center',
+                  color: location.pathname === item.path ? '#0E3A5D' : 'inherit',
                 }}
               >
                 {item.icon}
               </ListItemIcon>
-              <ListItemText primary={item.text} sx={{ opacity: open ? 1 : 0 }} />
+              <ListItemText primary={item.text} sx={{ opacity: open ? 1 : 0, fontFamily: 'Roboto, sans-serif' }} />
             </ListItemButton>
           </ListItem>
         ))}

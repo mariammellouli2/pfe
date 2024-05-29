@@ -20,6 +20,8 @@ import {
   SnackbarContent,
   FormControl,
   InputLabel,
+  FormControlLabel,
+  Checkbox,
   Chip,
 } from "@mui/material";
 import { Save, Send, Add } from "@mui/icons-material";
@@ -31,8 +33,6 @@ import { fr } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
 import { useMsal } from "@azure/msal-react";
 import axios from 'axios';
-
-const userInfo = JSON.parse(localStorage.getItem("currentUser"));
 
 const Feuille = () => {
   const { instance } = useMsal();
@@ -56,12 +56,16 @@ const Feuille = () => {
   const [weekStart, setWeekStart] = useState(new Date());
   const [tracages, setTracages] = useState([]);
   const [totalGlobal, setTotalGlobal] = useState(0);
+  const [myUserInfo, setMyUserInfo] = useState(null);
+
   const [days, setDays] = useState([]);
   const [currentWeekStart, setCurrentWeekStart] = useState(
     startOfWeek(new Date(), { weekStartsOn: 1 })
   );
 
   useEffect(() => {
+    setMyUserInfo(JSON.parse(localStorage.getItem("currentUser"))); 
+    console.log("787-+-878",JSON.parse(localStorage.getItem("currentUser")));
     fetchWorkItems();
   }, []);
 
@@ -185,21 +189,19 @@ const Feuille = () => {
     format(day, "EEEE dd", { locale: fr })
   );
   const [taskDetails, setTaskDetails] = useState({
-    Projet: "",
-    Prestation: "",
-    Durée_estimée: "",
+    TitleDevops: "",
+    BelongTo: "",
+    DescriptionDevops: "",
+    OriginalEstimate: "",
     Client: "",
-    Pieces_jointes: "",
-    Facturable: "Non Facturable",
+    State: "Nouveau",
+    Facturable: false,
+    AssignedTo: myUserInfo?.email || "", 
   });
 
   useEffect(() => {
-    setUserName(userInfo?.name);
-  }, []);
-
-  useEffect(() => {
     localStorage.setItem("feuilleDataRows", JSON.stringify(dataRows));
-  }, [dataRows]);
+  }, []);
 
   const currentDateFormatted = format(new Date(), "EEEE, dd MMMM yyyy", { locale: fr });
 
@@ -229,6 +231,14 @@ const Feuille = () => {
     setTaskDetails((prevDetails) => ({
       ...prevDetails,
       [name]: value,
+    }));
+  };
+
+  const handleFacturableTaskChange = (event) => {
+    const { checked } = event.target;
+    setTaskDetails((prevDetails) => ({
+      ...prevDetails,
+      Facturable: checked,
     }));
   };
 
@@ -377,6 +387,34 @@ const Feuille = () => {
     }
   };
 
+  const handleAddTaskManually = async () => {
+    console.log("Adding task manually:", taskDetails);
+    try {
+      const response = await axios.post('https://localhost:44352/api/WorkItem', taskDetails, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      console.log('Task added successfully:', response.data);
+
+      const newTask = {
+        ...taskDetails,
+        id: dataRows.length,
+        workItemId: response.data.id,
+        total: 0,
+        AssignedTo: myUserInfo.email, 
+      };
+      setDataRows([...dataRows, newTask]);
+
+      handleCloseAddTaskDialog();
+    } catch (error) {
+      console.error('Error adding task:', error);
+      if (error.response) {
+        console.error('Response data:', error.response.data);
+      }
+    }
+  };
+
   const handleFacturableChange = (event, id) => {
     const { value } = event.target;
     const updatedRows = dataRows.map((row) => {
@@ -483,7 +521,8 @@ const Feuille = () => {
         <FormControl fullWidth>
           <InputLabel>Type prestation</InputLabel>
           <Select
-            value={params.value || "Non Facturable"}
+          defaultValue=''
+            value={params.value || "Facturable"}
             onChange={(event) => handleFacturableChange(event, params.row.id)}
             fullWidth
             renderValue={(value) => getFacturableChip(value)}
@@ -501,7 +540,7 @@ const Feuille = () => {
       align: "center",
       headerAlign: "center",
       headerClassName: 'custom-header',
-      valueGetter: (params) => "devops",
+     
     },
     {
       field: "state",
@@ -514,15 +553,17 @@ const Feuille = () => {
         <FormControl fullWidth>
           <InputLabel>Statut</InputLabel>
           <Select
+            defaultValue=""
             value={params.value || "Nouveau"}
             onChange={(event) => handleStatusChange(event, params.row.id)}
             fullWidth
             renderValue={(value) => getStatusChip(value)}
           >
-            <MenuItem value="Nouveau">Nouveau</MenuItem>
+            <MenuItem value="New">Nouveau</MenuItem>
             <MenuItem value="A Faire">A Faire</MenuItem>
             <MenuItem value="En Cours">En Cours</MenuItem>
-            <MenuItem value="Terminée">Terminée</MenuItem>
+            <MenuItem value="Terminée">Terminé</MenuItem>
+            <MenuItem style={{display: "none"}} value="Terminé">Terminé</MenuItem>
             <MenuItem value="Removed">Removed</MenuItem>
           </Select>
         </FormControl>
@@ -595,22 +636,16 @@ const Feuille = () => {
     headerClassName: 'custom-header',
   });
 
-  const handleAddTaskManually = async () => {
-    console.log("Adding task manually:", taskDetails); // Added log for debugging
-    try {
-      const response = await axios.post('https://localhost:44352/api/WorkItem', taskDetails);
-      console.log('Task added successfully:', response.data);
-      handleCloseAddTaskDialog();
-    } catch (error) {
-      console.error('Error adding task:', error);
-    }
-  };
-
   return (
     <>
+      {showSuccessMessage && (
+        <div style={{ backgroundColor: 'green', color: 'white', padding: '10px', marginBottom: '10px' }}>
+          Timesheet envoyé avec succès !
+        </div>
+      )}
       <div style={styles.container(theme)}>
         <Typography variant="h6" align="center" style={{ marginBottom: "20px" }}>
-          Time Sheet - {userName} - {currentDateFormatted} - {currentTime}
+          Time Sheet - {myUserInfo?.name} - {currentDateFormatted} - {currentTime}
         </Typography>
         <Snackbar
           open={showSuccessMessage}
@@ -677,34 +712,34 @@ const Feuille = () => {
               <div>
                 <TextField
                   margin="dense"
-                  label="Tache"
+                  label="Titre Devops"
                   fullWidth
-                  name="taches"
-                  value={taskDetails.taches}
+                  name="TitleDevops"
+                  value={taskDetails.TitleDevops}
                   onChange={handleTaskDetailsChange}
                 />
                 <TextField
                   margin="dense"
                   label="Projet"
                   fullWidth
-                  name="Projet"
-                  value={taskDetails.Projet}
+                  name="BelongTo"
+                  value={taskDetails.BelongTo}
                   onChange={handleTaskDetailsChange}
                 />
                 <TextField
                   margin="dense"
-                  label="Prestation"
+                  label="Description"
                   fullWidth
-                  name="Prestation"
-                  value={taskDetails.Prestation}
+                  name="DescriptionDevops"
+                  value={taskDetails.DescriptionDevops}
                   onChange={handleTaskDetailsChange}
                 />
                 <TextField
                   margin="dense"
                   label="Durée estimée"
                   fullWidth
-                  name="Durée_estimée"
-                  value={taskDetails.Durée_estimée}
+                  name="OriginalEstimate"
+                  value={taskDetails.OriginalEstimate}
                   onChange={handleTaskDetailsChange}
                 />
                 <TextField
@@ -719,10 +754,12 @@ const Feuille = () => {
                   margin="dense"
                   label="Statut"
                   fullWidth
-                  name="Statut"
-                  value={taskDetails.Statut}
+                  name="State"
+                  value={taskDetails.State}
                   onChange={handleTaskDetailsChange}
                 />
+                
+                
               </div>
             )}
           </DialogContent>

@@ -18,15 +18,15 @@ const useStyles = makeStyles(() => ({
     backgroundColor: 'white',
   },
   tableHead: {
-    backgroundColor: 'white', // Gris pour l'en-tête
+    backgroundColor: '#bdbdbd', // Gris pour l'en-tête
   },
   tableHeadCell: {
-    color: 'white',
+    color: 'black',
     fontWeight: 'bold',
   },
   tableRow: {
     '&:nth-of-type(odd)': {
-      backgroundColor: '#f5f5f5',
+      backgroundColor: '#fff',
     },
   },
   title: {

@@ -7,23 +7,23 @@ const useStyles = makeStyles(() => ({
   paper: {
     margin: '24px',
     padding: '24px',
-    backgroundColor: 'transparent',
+    backgroundColor: 'white',
     boxShadow: 'none',
   },
   table: {
     minWidth: 650,
-    backgroundColor: '#fff', // Fond blanc pour le tableau
+    backgroundColor: 'white',
   },
   tableHead: {
-    backgroundColor: '#fff', // Gris pour l'en-tête
+    backgroundColor: '#bdbdbd', // Gris pour l'en-tête
   },
   tableHeadCell: {
-    color: 'white',
+    color: 'black',
     fontWeight: 'bold',
   },
   tableRow: {
     '&:nth-of-type(odd)': {
-      backgroundColor: '##fff', // Couleur de fond alternée pour les lignes impaires
+      backgroundColor: '#fff',
     },
   },
   title: {

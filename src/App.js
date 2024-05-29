@@ -21,22 +21,23 @@ import FeuilleDetails from './components/pages/feuille/FeuilleDetails';
 import { ThemeContextProvider } from './components/TopBar/Theme';
 
 const AppContent = () => {
-    const location = useLocation();
     const [openDrawer, setOpenDrawer] = useState(false);
+    const location = useLocation();
 
     const toggleDrawer = () => {
         setOpenDrawer(!openDrawer);
     };
 
-    const isAuthPage = location.pathname === '/Authentification';
+    // Define a flag to check if the current route is the authentication route
+    const isAuthRoute = location.pathname === '/Authentification';
 
     return (
         <ThemeContextProvider>
             <>
-                {!isAuthPage && <TopBar onMenuClick={toggleDrawer} />}
+                {!isAuthRoute && <TopBar onMenuClick={toggleDrawer} />}
                 <div style={{ display: 'flex' }}>
-                    {!isAuthPage && <SideBar open={openDrawer} onClose={toggleDrawer} />}
-                    <div style={{ marginTop: isAuthPage ? "0" : "64px", width: "100%", padding: "20px" }}>
+                    {!isAuthRoute && <SideBar open={openDrawer} onClose={toggleDrawer} />}
+                    <div style={{ marginTop: !isAuthRoute ? "64px" : "0", width: "100%", padding: "20px" }}>
                         <Routes>
                             <Route path="/" element={<Navigate to="/Authentification" replace />} />
                             <Route path="/Authentification" element={<Auth />} />
@@ -50,7 +51,7 @@ const AppContent = () => {
                             <Route path="/approbation/collaborateur" element={<ApprobationCollab />} />
                             <Route path="/calendrier" element={<Calendrier />} />
                             <Route path="/parametrage" element={<Parametrage />} />
-                            <Route path="/feuille/details" element={<FeuilleDetails />} />
+                            <Route path="/feuille/details/:timesheetId/:userId" element={<FeuilleDetails />} />
                             <Route path="*" element={<NotFound />} />
                         </Routes>
                     </div>

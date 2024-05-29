@@ -22,7 +22,7 @@ export const rows = [
     Prestation: "Prestation B",
     Source: "Source B",
     Type_prestation: "Non Facturable",
-    Statut: "Terminé",
+    Statut: "Terminée",
     Temps_estimer: "15",
     Lundi: "",
     Mardi: "",

@@ -77,7 +77,9 @@ const TopBar = () => {
   const [sticky, setSticky] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const { mode, toggleMode } = useThemeContext();
-  const [notifications, setNotifications] = useState([]);
+  const [darkMode, setDarkMode] = useState(localStorage.getItem('currentMode') === 'dark');
+  const [responsableNotifications, setResponsableNotifications] = useState([]);
+  const [collaborateurNotifications, setCollaborateurNotifications] = useState([]);
   const navigate = useNavigate();
   const { instance } = useMsal();
   const theme = useTheme();
@@ -90,7 +92,6 @@ const TopBar = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
   useEffect(() => {
     const connection = new signalR.HubConnectionBuilder()
       .withUrl("https://localhost:44352/hub/notifications", {
@@ -103,14 +104,21 @@ const TopBar = () => {
       .then(() => console.log("Connected to SignalR"))
       .catch(err => console.log("Connection error: ", err));
 
-    connection.on("ReceiveNotification", (message) => {
-      setNotifications(prev => [...prev, message]);
+    connection.on("ReceiveNotification", (message, recipient) => {
+      console.log("+-+-pp+-+", message, recipient)
+
+      setResponsableNotifications(prev => [...prev, message]);
+
     });
 
     return () => {
       connection.stop();
     };
   }, []);
+
+  const handleSettingsClick = () => {
+    navigate('/parametrage'); // Naviguer vers la page "/parametrage"
+};
 
   const handleLogout = () => {
     instance.logoutPopup().then(() => {
@@ -119,10 +127,11 @@ const TopBar = () => {
       console.error('Échec de la déconnexion:', e);
     });
   };
-
   const handleMenuClick = (event) => {
     setAnchorEl(event.currentTarget);
-  };
+};
+
+
 
   const handleMenuClose = () => {
     setAnchorEl(null);
@@ -147,15 +156,15 @@ const TopBar = () => {
           <IconButton onClick={toggleMode} color="inherit">
             {mode === 'dark' ? <LightModeOutlinedIcon sx={{ mr: 1 }} /> : <DarkModeOutlinedIcon sx={{ mr: 1 }} />}
           </IconButton>
-          <NotificationDropdown notifications={notifications} />
-          <IconButton color="inherit">
-            <SettingsOutlinedIcon sx={{ mr: 1 }} />
-          </IconButton>
+          <NotificationDropdown notifications={responsableNotifications} />
+          <IconButton color="inherit" onClick={handleSettingsClick}>
+            <SettingsOutlinedIcon />
+        </IconButton>
+               
           <IconButton color="inherit" onClick={handleMenuClick}>
             <Person2OutlinedIcon />
           </IconButton>
           <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
-            <MenuItem onClick={handleMenuClose}>Paramètres</MenuItem>
             <MenuItem onClick={handleLogout}>Déconnexion</MenuItem>
           </Menu>
         </Stack>

@@ -17,7 +17,7 @@ const LoginSign = () => {
         const userEmail = response.account.username;
         console.log(userEmail);
         const res = await fetch(
-          `https://localhost:44352/api/Users/getRoleByUserEmail?email=${encodeURIComponent(
+          `https://localhost:44352/api/Users/${encodeURIComponent(
             userEmail
           )}`
         );
@@ -37,7 +37,9 @@ const LoginSign = () => {
           };
           
           console.log('currentUser.role  '+ currentUser.role);
-          localStorage.setItem("role", currentUser.role)
+          console.log('currentUser.data  '+ data);
+          localStorage.setItem("role", data.role)
+          localStorage.setItem("currentUser", JSON.stringify(currentUser));
           if (currentUser.role.includes('collaborateur') || currentUser.role.includes('responsable') || currentUser.role.includes('administrateur')) {
             navigate("/feuille", { replace: true });
           } else {

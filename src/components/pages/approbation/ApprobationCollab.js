@@ -4,22 +4,22 @@ import { Button, Table, TableHead, TableBody, TableRow, TableCell, Typography, P
 import { red } from '@mui/material/colors';
 
 const ApprobationCollaborateur = () => {
-  const history = useNavigate();
-  const [feuillesApprobations, setFeuillesApprobations] = useState([
-    { id: 1, reference: 'REF001', nom: 'Feuille 1', heures: 40, statut: 'Acceptée', dateEnvoi: '2024-04-01', dateApprobation: '2024-04-05' },
-    { id: 2, reference: 'REF002', nom: 'Feuille 2', heures: 35, statut: 'En cours', dateEnvoi: '2024-04-02', dateApprobation: null },
-    { id: 3, reference: 'REF003', nom: 'Feuille 3', heures: 42, statut: 'Rejetée', dateEnvoi: '2024-04-03', dateApprobation: '2024-04-07' },
-    { id: 4, reference: 'REF004', nom: 'Feuille 4', heures: 38, statut: 'Acceptée', dateEnvoi: '2024-04-04', dateApprobation: '2024-04-08' },
-    { id: 5, reference: 'REF005', nom: 'Feuille 5', heures: 45, statut: 'Rejetée', dateEnvoi: '2024-04-05', dateApprobation: '2024-04-09' },
-  ]);
+  const navigate = useNavigate(); // Corrected the variable name
+  const [feuillesApprobations, setFeuillesApprobations] = useState([]);
 
   // Fonction pour charger les données des feuilles d'approbation
   const fetchFeuillesApprobations = async () => {
-    // Logique pour récupérer les données des feuilles d'approbation depuis l'API ou une source de données
-    // Exemple :
-    const response = await fetch('url_de_votre_api/feuillesApprobations');
-    const data = await response.json();
-    return data;
+    try {
+      const response = await fetch('https://localhost:44352/api/Timesheet/GetTimesheet');
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des données des feuilles d\'approbation:', error);
+      return [];
+    }
   };
 
   useEffect(() => {
@@ -33,7 +33,7 @@ const ApprobationCollaborateur = () => {
 
   // Fonction pour modifier une feuille rejetée
   const handleModifierFeuille = (feuilleId) => {
-    history.push(`/modifierFeuille/${feuilleId}`);
+    navigate(`/modifierFeuille/${feuilleId}`);
   };
 
   return (

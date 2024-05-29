@@ -1,67 +1,80 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { Grid, Input, Spinner, Stack, Text, Box, Alert, AlertIcon } from '@chakra-ui/react';
+import React, { useState, useEffect } from "react";
+import { Typography } from "@mui/material";
+import "./ParametragePage.css";
+import defaultProfileImage from "./mariam.jpg"; // Default image or the image for roles other than 'collaborateur'
+import collaboratorProfileImage from "./mahmoud.jpg"; // Image for 'collaborateur' role
 
-function Parametrage({ userEmail }) {
+const ParametragePage = () => {
   const [userData, setUserData] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [userInfo, setUserInfo] = useState(null);
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const response = await axios.get(`https://localhost:44352/api/Users/${encodeURIComponent(userEmail)}`);
-        if (response.status === 200) {
-          const data = response.data;
-          setUserData(data);
-        } else {
-          throw new Error('Failed to fetch data');
-        }
-      } catch (error) {
-        setError('Error fetching data');
-        console.error('Error fetching data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    const userInfoFromStorage = JSON.parse(localStorage.getItem("currentUser"));
+    setUserInfo(userInfoFromStorage);
+  }, []);
 
-    if (userEmail) {
-      fetchData();
+  useEffect(() => {
+    if (userInfo) {
+      fetch(`https://localhost:44352/api/Users/${encodeURIComponent(userInfo.username)}`)
+        .then((response) => response.json())
+        .then((data) => {
+          setUserData(data);
+          setLoading(false);
+        })
+        .catch((error) => {
+          console.error("Error fetching data:", error);
+          setLoading(false);
+        });
     }
-  }, [userEmail]);
+  }, [userInfo]);
+
+  const profileImage = userData?.role === 'collaborateur' ? collaboratorProfileImage : defaultProfileImage;
 
   return (
-    <Box p={4} bg="gray.100" borderRadius="md">
-      <Grid
-        templateColumns={{ base: 'repeat(1, 1fr)', md: 'repeat(2, 1fr)' }}
-        gap={6}
-      >
-        <Stack spacing={4}>
-          <Text fontSize="lg" fontWeight="bold">User Information</Text>
-          {loading ? (
-            <Spinner />
-          ) : error ? (
-            <Alert status="error">
-              <AlertIcon />
-              {error}
-            </Alert>
-          ) : userData ? (
+    <div className="parametrage-container">
+      {loading ? (
+        <Typography variant="h5">Chargement des informations...</Typography>
+      ) : (
+        <form className="form">
+          <div className="logo-container">
+            <svg
+              viewBox="0 0 113 24"
+              height="24"
+              width="113"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              {/* Contenu du logo */}
+            </svg>
+          </div>
+          <Typography variant="h5" className="title">
+            Informations utilisateur
+          </Typography>
+          <img src={profileImage} alt="Profile" className="profile-image" />
+          <br />
+          <br />
+          {userData && (
             <>
-              <Input variant="filled" placeholder="ID" value={userData.id} isReadOnly />
-              <Input variant="filled" placeholder="Display Name" value={userData.displayName} isReadOnly />
-              <Input variant="filled" placeholder="Email" value={userData.email} isReadOnly />
-              <Input variant="filled" placeholder="Role" value={userData.role} isReadOnly />
-              <Input variant="filled" placeholder="Group ID" value={userData.groupId} isReadOnly />
+              <Typography className="form-text">
+                <strong>Nom d'utilisateur :</strong> {userData.displayName}
+              </Typography>
+              <Typography className="form-text">
+                <strong>Email :</strong> {userData.email}
+              </Typography>
+              {userData.role && (
+                <Typography className="form-text">
+                  <strong>Rôle :</strong> {userData.role}
+                </Typography>
+              )}
+              <Typography className="form-text">
+                <strong>Identifiant de groupe :</strong> {userData.groupId}
+              </Typography>
             </>
-          ) : (
-            <Text>No data available</Text>
           )}
-        </Stack>
-      </Grid>
-    </Box>
+        </form>
+      )}
+    </div>
   );
-}
+};
 
-export default Parametrage;
+export default ParametragePage;

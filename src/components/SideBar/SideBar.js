@@ -11,11 +11,9 @@ import ListItemText from '@mui/material/ListItemText';
 import MuiDrawer from '@mui/material/Drawer';
 import { styled, useTheme } from '@mui/material/styles';
 import PendingActionsOutlinedIcon from '@mui/icons-material/PendingActionsOutlined';
-import ListAltOutlinedIcon from '@mui/icons-material/ListAltOutlined';
 import InventoryOutlinedIcon from '@mui/icons-material/InventoryOutlined';
 import PermContactCalendarOutlinedIcon from '@mui/icons-material/PermContactCalendarOutlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
-import HistoryOutlinedIcon from '@mui/icons-material/HistoryOutlined';
 import BarChartOutlinedIcon from '@mui/icons-material/BarChartOutlined';
 import BallotOutlinedIcon from '@mui/icons-material/BallotOutlined';
 import { Typography } from "@mui/material";
@@ -23,13 +21,11 @@ import Avatar from '@mui/material/Avatar';
 import { useNavigate } from "react-router-dom";
 import MenuIcon from '@mui/icons-material/Menu';
 import { useLocation } from 'react-router-dom';
-import { grey } from '@mui/material/colors';
-import './SideBar.css';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 
 // Import images
-import mariamImage from './mariam.png';
-import mahmoudImage from './mahmoud.png';
+import mariamImage from './mariam.jpg';
+import mahmoudImage from './mahmoud.jpg';
 
 const drawerWidth = 240;
 
@@ -70,7 +66,6 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
   ({ theme, open }) => ({
     width: drawerWidth,
     flexShrink: 0,
-    color: '#0E3A5D',
     whiteSpace: 'nowrap',
     boxSizing: 'border-box',
     backgroundColor: theme.palette.mode === 'light' ? '#0E3A5D' : '#ffffff',
@@ -95,8 +90,11 @@ const Array2 = [
 ];
 const Array3 = [
   { "text": "Calendrier", "icon": <CalendarMonthIcon />, "path": "/Calendrier" },
-  { "text": "Dashboard", "icon": <BarChartOutlinedIcon />, "path": role === "responsable" ? "/Dashboard" : "" }
 ];
+
+if (role === "responsable") {
+  Array3.push({ "text": "Dashboard", "icon": <BarChartOutlinedIcon />, "path": "/Dashboard" });
+}
 const Array4 = [
   { "text": "Parametrage", "icon": <SettingsOutlinedIcon />, "path": "/Parametrage" },
 ];
@@ -117,7 +115,9 @@ const SideBar = () => {
 
   const getAvatarSrc = () => {
     if (userInfo?.email === "mallouli.mariam@isimsf.u-sfax.tn") {
-      return mahmoudImage; // Replace with the actual path to Mariam Mallouli's photo
+      return mariamImage;
+    } else if (userInfo?.email === "mahmoud@example.com") {
+      return mahmoudImage;
     }
     return mariamImage; // Default photo path
   };
@@ -142,24 +142,22 @@ const SideBar = () => {
           {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
         </IconButton>
       )}
-<Avatar 
-  sx={{
-    mx: "auto",
-    width: open ? 80 : 50, // Augmenter la taille
-    height: open ? 80 : 50, // Augmenter la taille
-    my: 1,
-    transition: "0.25s",
-    '& img': {
-      objectFit: 'contain', // Assure que l'image est ajustée sans être coupée
-      width: '100%', // S'assure que l'image prend toute la largeur de l'avatar
-      height: '100%', // S'assure que l'image prend toute la hauteur de l'avatar
-    }
-  }}
-  alt={userInfo?.name}
-  src={getAvatarSrc()}
-/>
-
-
+      <Avatar
+        sx={{
+          mx: "auto",
+          width: open ? 100 : 55, // Augmenter la taille
+          height: open ? 100 : 55, // Augmenter la taille
+          my: 1,
+          transition: "0.25s",
+          '& img': {
+            objectFit: 'contain', // Assure que l'image est ajustée sans être coupée
+            width: '100%', // S'assure que l'image prend toute la largeur de l'avatar
+            height: '100%', // S'assure que l'image prend toute la hauteur de l'avatar
+          }
+        }}
+        alt={userInfo?.name}
+        src={getAvatarSrc()}
+      />
       <Typography align="center" sx={{ fontSize: open ? 17 : 0, transition: "0.25s", fontFamily: 'Roboto, sans-serif' }} > {userInfo?.name} </Typography>
       <Typography align="center" sx={{ fontSize: open ? 14 : 0, transition: "0.25s", color: theme.palette.info.main, fontFamily: 'Roboto, sans-serif' }} > {role} </Typography>
       <List>
@@ -287,6 +285,6 @@ const SideBar = () => {
       </List>
     </Drawer>
   );
-}
+};
 
 export default SideBar;

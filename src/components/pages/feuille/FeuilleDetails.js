@@ -1,15 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import {
-  Toolbar,
-  IconButton,
   Typography,
-  Select,
-  MenuItem,
-  Box,
-  Tabs,
-  Tab,
   Dialog,
+  IconButton,
   DialogTitle,
   DialogContent,
   DialogActions,
@@ -18,64 +12,39 @@ import {
   TextField,
   Snackbar,
   SnackbarContent,
-  FormControl,
-  InputLabel,
-  Chip,
+  Box,
 } from "@mui/material";
-import { Save, Send, Add } from "@mui/icons-material";
-import KeyboardDoubleArrowLeftIcon from "@mui/icons-material/KeyboardDoubleArrowLeft";
-import KeyboardDoubleArrowRightIcon from "@mui/icons-material/KeyboardDoubleArrowRight";
-import InfoTwoToneIcon from "@mui/icons-material/InfoTwoTone";
 import { format, addDays, startOfWeek, addWeeks } from "date-fns";
 import { fr } from "date-fns/locale";
-import { useNavigate } from "react-router-dom";
-import { useMsal } from "@azure/msal-react";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from 'axios';
-
-const userInfo = JSON.parse(localStorage.getItem("currentUser"));
+import KeyboardDoubleArrowLeftIcon from "@mui/icons-material/KeyboardDoubleArrowLeft";
+import KeyboardDoubleArrowRightIcon from "@mui/icons-material/KeyboardDoubleArrowRight";
 
 const FeuilleDetails = () => {
-  const { instance } = useMsal();
-  const navigate = useNavigate();
   const theme = useTheme();
-  const [remark, setRemark] = useState("");
-  const [openAttachmentDialog, setOpenAttachmentDialog] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [selectedRowId, setSelectedRowId] = useState(null);
-  const [userName, setUserName] = useState("");
+  const navigate = useNavigate();
+  const { timesheetId, userId } = useParams();
+
+  const [comment, setComment] = useState("");
+  const [openCommentDialog, setOpenCommentDialog] = useState(false);
   const [currentTime, setCurrentTime] = useState("");
   const [dataRows, setDataRows] = useState([]);
-  const [openDialog, setOpenDialog] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [selectedTab, setSelectedTab] = useState(0);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
-  const [openAddTaskDialog, setOpenAddTaskDialog] = useState(false);
-  const [selectedMethod, setSelectedMethod] = useState("");
-  const [openManualTaskDialog, setOpenManualTaskDialog] = useState(false);
-  const [selectedValue, setSelectedValue] = useState('');
-  const [weekStart, setWeekStart] = useState(new Date());
-  const [tracages, setTracages] = useState([]);
   const [totalGlobal, setTotalGlobal] = useState(0);
-  const [days, setDays] = useState([]);
-  const [currentWeekStart, setCurrentWeekStart] = useState(
-    startOfWeek(new Date(), { weekStartsOn: 1 })
-  );
-  const [openRejectDialog, setOpenRejectDialog] = useState(false);
-  const [rejectComment, setRejectComment] = useState("");
+  const [myUserInfo, setMyUserInfo] = useState(null);
+  const [userRole, setUserRole] = useState("");
+  const [weekStart, setWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
 
   useEffect(() => {
-    fetchWorkItems();
-  }, []);
-
-  const calc = (obj) => {
-    let sum = 0;
-    for (let i = 0; i < obj.tracages.length; i++) {
-      if (Number(obj.tracages[i].hours)) {
-        sum += obj.tracages[i].hours;
-      }
+    const currentUser = localStorage.getItem("currentUser");
+    if (currentUser) {
+      setMyUserInfo(JSON.parse(currentUser));
     }
-    return sum;
-  };
+    fetchTimesheetDetails();
+    setUserRole(localStorage.getItem("role"));
+  }, [timesheetId, userId]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -84,127 +53,33 @@ const FeuilleDetails = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const handlePostData = async () => {
+  const fetchTimesheetDetails = async () => {
     setLoading(true);
     try {
-      const tracages = dataRows.flatMap(row =>
-        weekdays.map(day => {
-          const dayKey = format(day, "EEEE dd", { locale: fr });
-          const hours = row[dayKey] ? parseFloat(row[dayKey]) : 0;
-          if (hours > 0) {
-            return {
-              workItemId: row.workItemId,
-              year: day.getFullYear(),
-              month: day.getMonth() + 1,
-              day: day.getDate(),
-              dayName: format(day, "EEEE", { locale: fr }),
-              hours: hours
-            };
-          }
-          return null;
-        }).filter(entry => entry !== null)
-      );
+      const response = await axios.get(`https://localhost:44352/api/Timesheet/GetTimesheet?id=${timesheetId}&userId=${userId}`);
+      const timesheet = response.data;
+      if (timesheet && timesheet.tracages) {
+        const workItems = timesheet.tracages.map((tracage, index) => ({
+          ...tracage.workItem,
+          id: index,
+          tracages: [tracage]
+        }));
 
-      console.log("tracages", tracages);
-      const response = await axios.post('https://localhost:44352/api/Tracages', tracages, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      console.log('Réponse de l\'API POST:', response.data);
-      setShowSuccessMessage(true);
-    } catch (error) {
-      if (error.response) {
-        console.error('Erreur lors de la requête POST:', error.response.data);
-      } else if (error.request) {
-        console.error('Aucune réponse reçue:', error.request);
-      } else {
-        console.error('Erreur lors de la configuration de la requête:', error.message);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchWorkItems = async () => {
-    setLoading(true);
-    try {
-      const accounts = await instance.getAllAccounts();
-      if (accounts.length > 0) {
-        const email = accounts[0].username;
-        const response = await axios.get(`https://localhost:44352/api/WorkItem/withtracages?email=mahmoud.kchaou@isimsf.u-sfax.tn`);
-        const workItems = response.data;
-        console.log("---",)
-        fetchTracages(workItems, email);
+        setDataRows(workItems);
+        setTotalGlobal(calcTotal(workItems));
       }
     } catch (error) {
-      console.error("Error fetching work items:", error);
+      console.error("Error fetching timesheet details:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchTracages = async (workItems) => {
-    setLoading(true);
-    try {
-      const response = await axios.get('https://localhost:44352/api/Tracages');
-      const tracages = response.data;
-
-      let total = 0;
-      const data = workItems.map((item, key) => {
-        const workItemsEntries = tracages.filter(tracage => tracage.workItemId === item.id);
-
-        const hoursEntries = workItemsEntries.reduce((acc, tracage) => {
-          const dayKey = format(new Date(tracage.year, tracage.month - 1, tracage.day), "EEEE dd", { locale: fr });
-          acc[dayKey] = tracage.hours;
-          return acc;
-        }, {});
-
-        total += calc(item);
-
-        return {
-          ...item,
-          id: key,
-          workItemId: item.id,
-          ...hoursEntries,
-          total: calc(item),
-        };
-      });
-
-      setDataRows(data);
-      setTotalGlobal(total);
-    } catch (error) {
-      console.error("Error fetching tracages:", error);
-      console.error("Error details:", error.response?.data || error.message);
-    } finally {
-      setLoading(false);
-    }
+  const calcTotal = (workItems) => {
+    return workItems.reduce((total, item) => {
+      return total + (item.tracages ? item.tracages.reduce((sum, tracage) => sum + tracage.hours, 0) : 0);
+    }, 0);
   };
-
-  const weekdays = Array.from({ length: 7 }, (_, i) =>
-    addDays(weekStart, i)
-  ).filter((day) => day.getDay() !== 0 && day.getDay() !== 6);
-  const dayLabels = weekdays.map((day) =>
-    format(day, "EEEE dd", { locale: fr })
-  );
-  const [taskDetails, setTaskDetails] = useState({
-    Projet: "",
-    Prestation: "",
-    Durée_estimée: "",
-    Client: "",
-    Pieces_jointes: "",
-    Facturable: "Non Facturable",
-  });
-
-  useEffect(() => {
-    setUserName(userInfo?.name);
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem("feuilleDataRows", JSON.stringify(dataRows));
-  }, [dataRows]);
-
-  const currentDateFormatted = format(new Date(), "EEEE, dd MMMM yyyy", { locale: fr });
 
   const handlePreviousWeek = () => {
     setWeekStart((currentWeekStart) => addWeeks(currentWeekStart, -1));
@@ -214,339 +89,97 @@ const FeuilleDetails = () => {
     setWeekStart((currentWeekStart) => addWeeks(currentWeekStart, 1));
   };
 
-  const handleHourChange = (event, id, day) => {
-    const { value } = event.target;
-    if (parseFloat(value) >= 0 || value === "") {
-      const updatedRows = dataRows.map((row) => {
-        if (row.id === id) {
-          return { ...row, [day]: value };
-        }
-        return row;
-      });
-      setDataRows(updatedRows);
+  const handleStatusChange = async (status, comment, userId, timesheetId) => {
+    console.log({timesheetId})
+    if (!userId) {
+      console.error('UserId est requis.');
+      return;
     }
-  };
 
-  const handleTaskDetailsChange = (event) => {
-    const { name, value } = event.target;
-    setTaskDetails((prevDetails) => ({
-      ...prevDetails,
-      [name]: value,
-    }));
-  };
-
-  const handleStatusChange = (event, id) => {
-    const { value } = event.target;
-    const updatedRows = dataRows.map((row) => {
-      if (row.id === id) {
-        return { ...row, state: value };
-      }
-      return row;
-    });
-    setDataRows(updatedRows);
-  };
-
-  const handleOpenDialog = () => {
-    setOpenDialog(true);
-  };
-
-  const handleCloseDialog = () => {
-    setOpenDialog(false);
-  };
-
-  const handleTabChange = (event, newValue) => {
-    setSelectedTab(newValue);
-  };
-
-  const handleOpenAddTaskDialog = () => {
-    setOpenAddTaskDialog(true);
-  };
-
-  const handleCloseAddTaskDialog = () => {
-    setOpenAddTaskDialog(false);
-  };
-
-  const handleOpenManualTaskDialog = () => {
-    setOpenManualTaskDialog(true);
-  };
-
-  const handleCloseManualTaskDialog = () => {
-    setOpenManualTaskDialog(false);
-  };
-
-  const handleOpenAttachmentDialog = (rowId) => {
-    setSelectedRowId(rowId);
-    setOpenAttachmentDialog(true);
-  };
-
-  const handleCloseAttachmentDialog = () => {
-    setOpenAttachmentDialog(false);
-  };
-
-  const handleFileChange = (event) => {
-    setSelectedFile(event.target.files[0]);
-  };
-
-  const handleAddAttachment = () => {
-    if (selectedFile && selectedRowId !== null) {
-      const updatedRows = dataRows.map(row => {
-        if (row.id === selectedRowId) {
-          return { ...row, attachment: selectedFile.name, remark: remark };
-        }
-        return row;
-      });
-      setDataRows(updatedRows);
+    if (status === 'Rejected' && !comment) {
+      console.error('Comment est requis pour le refus.');
+      return;
     }
-    setSelectedFile(null);
-    setRemark("");
-    handleCloseAttachmentDialog();
-  };
 
-  const handleMethodSelect = (method) => {
-    setSelectedMethod(method);
-    setOpenAddTaskDialog(false);
-    if (method === "saisie") {
-      handleOpenManualTaskDialog();
-    }
-  };
-
-  const showSuccessSnackbar = () => {
-    setShowSuccessMessage(true);
-    setTimeout(() => {
-      setShowSuccessMessage(false);
-    }, 3000);
-  };
-
-  const handleSendTimesheet = async () => {
     setLoading(true);
     try {
-      const accounts = await instance.getAllAccounts();
-      const email = accounts.length > 0 ? accounts[0].username : '';
-      const dateFeuille = new Date();
-
-      const tracages = dataRows.flatMap(row =>
-        weekdays.map(day => {
-          const dayKey = format(day, "EEEE dd", { locale: fr });
-          const hours = row[dayKey] ? parseFloat(row[dayKey]) : 0;
-          if (hours > 0) {
-            return {
-              workItemId: row.workItemId,
-              year: day.getFullYear(),
-              month: day.getMonth() + 1,
-              day: day.getDate(),
-              dayName: format(day, "EEEE", { locale: fr }),
-              hours: hours
-            };
-          }
-          return null;
-        }).filter(entry => entry !== null)
-      );
-
-      const timesheet = {
-        dateFeuille: dateFeuille.toISOString(),
-        dateEnvoie: dateFeuille.toISOString(),
-        statut: 'Nouveau',
-        email: email,
-        validatedBy: null,
-        tracages: tracages
-      };
-
-      const response = await axios.post('https://localhost:44352/api/Timesheet/create', timesheet, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
+      const response = await axios.put(`https://localhost:44352/api/Timesheet/UpdateStatus`, {
+        timesheetId: timesheetId,
+        status: status,
+        comment: comment,
+        userId: userId
       });
-      console.log('Réponse de l\'API POST:', response.data);
-      setShowSuccessMessage(true);
-    } catch (error) {
-      if (error.response) {
-        console.error('Erreur lors de la requête POST:', error.response.data);
-      } else if (error.request) {
-        console.error('Aucune réponse reçue:', error.request);
+
+      if (response.status === 200) {
+        console.log(`Timesheet ${timesheetId} status updated to ${status}`);
+
+        const messageContent = status === 'Accepted'
+          ? 'Votre timesheet a été accepté.'
+          : `Votre timesheet a été refusé. Commentaire : ${comment || 'Aucun commentaire'}`;
+
+        console.log('Message de notification généré:', messageContent);
+
+        if (userRole === 'responsable') {
+          console.log("yeahh")
+          await axios.post(`https://localhost:44352/api/Notification`, {
+            id: "1",
+            content: messageContent,
+            recipient: "collaborateur"
+          });
+        }
+
+        setShowSuccessMessage(true);
+        navigate("/approbation/Responsable");
       } else {
-        console.error('Erreur lors de la configuration de la requête:', error.message);
+        console.error('Réponse inattendue:', response);
+      }
+    } catch (error) {
+      if (error.response && error.response.status === 400) {
+        console.error('Erreur de validation:', error.response.data.errors);
+      } else {
+        console.error('Erreur lors de la mise à jour du statut du timesheet:', error);
       }
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDeleteTimesheet = async (timesheetId) => {
-    try {
-      await axios.delete(`https://localhost:44352/api/WorkItem/${timesheetId}`);
-      console.log(`Timesheet avec l'ID ${timesheetId} a été supprimé.`);
-    } catch (error) {
-      console.error('Erreur lors de la suppression :', error);
-    }
+  const handleAccept = () => {
+    handleStatusChange('Accepted', 'cha7 ba7', userId, timesheetId);
   };
 
-  const handleFacturableChange = (event, id) => {
-    const { value } = event.target;
-    const updatedRows = dataRows.map((row) => {
-      if (row.id === id) {
-        return { ...row, facturable: value };
-      }
-      return row;
-    });
-    setDataRows(updatedRows);
+  const handleAnuule = () => {
+    navigate(-1);
+    console.log('Bouton Annuler cliqué !');
+};
+  const handleReject = () => {
+    setOpenCommentDialog(true);
   };
 
-  const getStatusChip = (status) => {
-    switch (status) {
-      case "Nouveau":
-        return <Chip label="Nouveau" style={styles.chipNew} />;
-      case "A Faire":
-        return <Chip label="A Faire" style={styles.chipToDo} />;
-      case "En Cours":
-        return <Chip label="En Cours" style={styles.chipDoing} />;
-      case "Terminée":
-        return <Chip label="Terminée" style={styles.chipTerminated} />;
-      case "Removed":
-        return <Chip label="Removed" style={styles.chipRemoved} />;
-      default:
-        return <Chip label={status} />;
-    }
+  const handleCommentSubmit = () => {
+    handleStatusChange('Rejected', comment, userId, timesheetId);
+    setOpenCommentDialog(false);
+    setComment("");
   };
 
-  const getFacturableChip = (facturable) => {
-    switch (facturable) {
-      case "Facturable":
-        return <Chip label="Facturable" style={styles.chipFacturable} />;
-      case "Non Facturable":
-        return <Chip label="Non Facturable" style={styles.chipNonFacturable} />;
-      default:
-        return <Chip label={facturable} />;
-    }
+  const handleCommentChange = (event) => {
+    setComment(event.target.value);
+  };
+
+  const handleCloseCommentDialog = () => {
+    setOpenCommentDialog(false);
   };
 
   const columns = [
-    {
-      field: "titleDevops",
-      headerName: "Tâche",
-      align: "center",
-      headerAlign: "center",
-      headerClassName: 'custom-header',
-    },
-    {
-      field: "belongTo",
-      headerName: "Projet",
-      width: 150,
-      align: "center",
-      headerAlign: "center",
-      headerClassName: 'custom-header',
-      renderCell: (params) => (
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-          }}
-        >
-          <Typography>{params.value}</Typography>
-          {params.row.taches &&
-            params.row.taches.map((task) => (
-              <Typography key={task}>{task}</Typography>
-            ))}
-          {params.row.attachment && (
-            <a
-              href={params.row.attachment}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {params.row.attachment}
-            </a>
-          )}
-        </div>
-      ),
-    },
-    {
-      field: "clientName",
-      headerName: "Client",
-      align: "center",
-      headerAlign: "center",
-      headerClassName: 'custom-header',
-      valueGetter: (params) => "Proged"
-    },
-    {
-      field: "descriptionDevops",
-      headerName: "Prestation",
-      width: 100,
-      align: "center",
-      headerAlign: "center",
-      headerClassName: 'custom-header',
-    },
-    {
-      field: "facturable",
-      headerName: "Type prestation",
-      width: 150,
-      align: "center",
-      headerAlign: "center",
-      headerClassName: 'custom-header',
-      renderCell: (params) => (
-        <FormControl fullWidth>
-          <InputLabel>Type prestation</InputLabel>
-          <Select
-            value={params.value || "Non Facturable"}
-            onChange={(event) => handleFacturableChange(event, params.row.id)}
-            fullWidth
-            renderValue={(value) => getFacturableChip(value)}
-          >
-            <MenuItem value="Non Facturable">Non Facturable</MenuItem>
-            <MenuItem value="Facturable">Facturable</MenuItem>
-          </Select>
-        </FormControl>
-      ),
-    },
-    {
-      field: "source",
-      headerName: "Source",
-      width: 90,
-      align: "center",
-      headerAlign: "center",
-      headerClassName: 'custom-header',
-      valueGetter: (params) => "devops",
-    },
-    {
-      field: "state",
-      headerName: "Statut",
-      width: 150,
-      align: "center",
-      headerAlign: "center",
-      headerClassName: 'custom-header',
-      renderCell: (params) => (
-        <FormControl fullWidth>
-          <InputLabel>Statut</InputLabel>
-          <Select
-            value={params.value || "Nouveau"}
-            onChange={(event) => handleStatusChange(event, params.row.id)}
-            fullWidth
-            renderValue={(value) => getStatusChip(value)}
-          >
-            <MenuItem value="Nouveau">Nouveau</MenuItem>
-            <MenuItem value="A Faire">A Faire</MenuItem>
-            <MenuItem value="En Cours">En Cours</MenuItem>
-            <MenuItem value="Terminée">Terminée</MenuItem>
-            <MenuItem value="Removed">Removed</MenuItem>
-          </Select>
-        </FormControl>
-      ),
-    },
-    {
-      field: "originalEstimate",
-      headerName: "Estimée",
-      width: 80,
-      align: "center",
-      headerAlign: "center",
-      headerClassName: 'custom-header',
-    },
-    {
-      field: "total",
-      headerName: "Total",
-      width: 100,
-      align: "center",
-      headerAlign: "center",
-      headerClassName: 'custom-header',
-    },
+    { field: "titleDevops", headerName: "Tâche", width: 150, align: "center", headerAlign: "center" },
+    { field: "belongTo", headerName: "Projet", width: 150, align: "center", headerAlign: "center" },
+    { field: "clientName", headerName: "Client", width: 150, align: "center", headerAlign: "center", valueGetter: () => "Proged" },
+    { field: "descriptionDevops", headerName: "Prestation", width: 150, align: "center", headerAlign: "center" },
+    { field: "facturable", headerName: "Type prestation", width: 150, align: "center", headerAlign: "center" },
+    { field: "source", headerName: "Source", width: 150, align: "center", headerAlign: "center", valueGetter: () => "devops" },
+    { field: "state", headerName: "Statut", width: 150, align: "center", headerAlign: "center" },
+    { field: "originalEstimate", headerName: "Estimée", width: 150, align: "center", headerAlign: "center" },
+    { field: "total", headerName: "Total", width: 150, align: "center", headerAlign: "center" },
     {
       field: "back",
       headerName: "Précédent",
@@ -561,26 +194,24 @@ const FeuilleDetails = () => {
     },
   ];
 
-  weekdays.forEach((day) => {
-    const dayName = format(day, "EEEE dd", { locale: fr });
+  const weekdays = Array.from({ length: 7 }, (_, i) =>
+    addDays(weekStart, i)
+  ).filter((day) => day.getDay() !== 0 && day.getDay() !== 6);
+  const dayLabels = weekdays.map((day) =>
+    format(day, "EEEE dd", { locale: fr })
+  );
+
+  dayLabels.forEach((day) => {
     columns.push({
-      field: dayName,
-      headerName: dayName,
+      field: day,
+      headerName: day,
       width: 160,
       align: "center",
       headerAlign: "center",
       renderCell: (params) => (
-        <div style={{ display: "flex", alignItems: "center", gap: "5px", borderRadius: "4px", padding: "4px" }}>
-          <input
-            type="number"
-            value={params.row[dayName] || ""}
-            onChange={(event) => handleHourChange(event, params.row.id, dayName)}
-            style={{ width: "50px", padding: "0px", fontSize: "14px", border: "", outline: "none" }}
-          />
-          <IconButton onClick={() => handleOpenAttachmentDialog(params.row.id)}>
-            <InfoTwoToneIcon style={{ color: "grey" }} />
-          </IconButton>
-        </div>
+        <Typography>
+          {params.row.tracages.find(tracage => format(new Date(tracage.year, tracage.month - 1, tracage.day), "EEEE dd", { locale: fr }) === day)?.hours || ""}
+        </Typography>
       ),
     });
   });
@@ -598,54 +229,9 @@ const FeuilleDetails = () => {
     headerClassName: 'custom-header',
   });
 
-  const handleAddTaskManually = async () => {
-    console.log("Adding task manually:", taskDetails); // Added log for debugging
-    try {
-      const response = await axios.post('https://localhost:44352/api/WorkItem', taskDetails);
-      console.log('Task added successfully:', response.data);
-      handleCloseAddTaskDialog();
-    } catch (error) {
-      console.error('Error adding task:', error);
-    }
-  };
-
-  const handleAcceptTimesheet = async (timesheetId) => {
-    try {
-      const response = await axios.post(`https://localhost:44352/api/Timesheet/accept/${timesheetId}`);
-      console.log('Timesheet accepted:', response.data);
-    } catch (error) {
-      console.error('Error accepting timesheet:', error);
-    }
-  };
-
-  const handleRejectTimesheet = () => {
-    setOpenRejectDialog(true);
-  };
-
-  const handleCloseRejectDialog = () => {
-    setOpenRejectDialog(false);
-  };
-
-  const handleRejectCommentChange = (event) => {
-    setRejectComment(event.target.value);
-  };
-
-  const handleSubmitRejectComment = async (timesheetId) => {
-    try {
-      const response = await axios.post(`https://localhost:44352/api/Timesheet/reject/${timesheetId}`, { comment: rejectComment });
-      console.log('Timesheet rejected:', response.data);
-      handleCloseRejectDialog();
-    } catch (error) {
-      console.error('Error rejecting timesheet:', error);
-    }
-  };
-
   return (
     <>
-      <div style={styles.container}>
-        <Typography variant="h6" align="center" style={{ marginBottom: "20px" }}>
-          Time Sheet Details - {currentDateFormatted} - {currentTime}
-        </Typography>
+      {showSuccessMessage && (
         <Snackbar
           open={showSuccessMessage}
           autoHideDuration={3000}
@@ -657,36 +243,21 @@ const FeuilleDetails = () => {
             style={{ backgroundColor: 'green', color: 'white' }}
           />
         </Snackbar>
+      )}
+      <div style={styles.container(theme)}>
+        <Typography variant="h6" align="center" style={{ marginBottom: "20px" }}>
+          Time Sheet details - {format(new Date(), "EEEE, dd MMMM yyyy", { locale: fr })} - {currentTime}
+        </Typography>
         <div style={{ height: "calc(100vh - 250px)", width: "100%" }}>
           <DataGrid
             rows={dataRows}
             columns={columns}
             pageSize={10}
-            checkboxSelection
             getRowId={(row) => row.id}
-            components={{
-              Toolbar: () => (
-                <Toolbar style={{ justifyContent: "flex-end" }}>
-                  <div style={{ flex: 1 }} />
-                  <span style={{ fontWeight: "bold", marginRight: "20px" }}>
-                    Total Global: {totalGlobal}
-                  </span>
-                  <IconButton color="primary" onClick={handlePostData}>
-                    <Save style={{ color: "#494A4A" }} />
-                  </IconButton>
-                  <IconButton color="primary" onClick={handleSendTimesheet}>
-                    <Send style={{ color: "#494A4A" }} />
-                  </IconButton>
-                  <IconButton color="primary" onClick={() => setOpenAddTaskDialog(true)}>
-                    <Add />
-                  </IconButton>
-                </Toolbar>
-              ),
-            }}
             sx={{
               '& .MuiDataGrid-columnHeaders': {
-                backgroundColor: '#f0f0f0',
-                color: '#555',
+                backgroundColor: theme.palette.background.paper,
+                color: theme.palette.text.primary,
               },
               '& .MuiDataGrid-columnHeaderTitle': {
                 fontWeight: 'bold',
@@ -696,190 +267,81 @@ const FeuilleDetails = () => {
               },
               '& .MuiDataGrid-cell': {
                 borderBottom: 'none',
+                color: theme.palette.text.primary,
               },
             }}
           />
         </div>
-        <Dialog open={openAddTaskDialog} onClose={handleCloseAddTaskDialog}>
-          <DialogTitle>Ajouter une tâche</DialogTitle>
-          <DialogContent>
-            <Tabs value={selectedTab} onChange={handleTabChange} centered>
-              <Tab label="Saisie manuelle" />
-            </Tabs>
-            {selectedTab === 0 && (
-              <div>
-                <TextField
-                  margin="dense"
-                  label="Tache"
-                  fullWidth
-                  name="taches"
-                  value={taskDetails.taches}
-                  onChange={handleTaskDetailsChange}
-                />
-                <TextField
-                  margin="dense"
-                  label="Projet"
-                  fullWidth
-                  name="Projet"
-                  value={taskDetails.Projet}
-                  onChange={handleTaskDetailsChange}
-                />
-                <TextField
-                  margin="dense"
-                  label="Prestation"
-                  fullWidth
-                  name="Prestation"
-                  value={taskDetails.Prestation}
-                  onChange={handleTaskDetailsChange}
-                />
-                <TextField
-                  margin="dense"
-                  label="Durée estimée"
-                  fullWidth
-                  name="Durée_estimée"
-                  value={taskDetails.Durée_estimée}
-                  onChange={handleTaskDetailsChange}
-                />
-                <TextField
-                  margin="dense"
-                  label="Client"
-                  fullWidth
-                  name="Client"
-                  value={taskDetails.Client}
-                  onChange={handleTaskDetailsChange}
-                />
-                <TextField
-                  margin="dense"
-                  label="Statut"
-                  fullWidth
-                  name="Statut"
-                  value={taskDetails.Statut}
-                  onChange={handleTaskDetailsChange}
-                />
-              </div>
-            )}
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseAddTaskDialog} sx={{ backgroundColor: '#046C92', color: 'white' }}>
-              Annuler
-            </Button>
-            <Button 
-              onClick={handleAddTaskManually} 
-              color="primary"
-              sx={{ backgroundColor: '#046C92', color: 'white' }}
-            >
-              Ajouter
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        <Dialog open={openAttachmentDialog} onClose={handleCloseAttachmentDialog}>
-          <DialogTitle>Ajouter une pièce jointe et une remarque</DialogTitle>
-          <DialogContent>
-            <TextField
-              margin="dense"
-              label="Remarque"
-              fullWidth
-              value={remark}
-              onChange={(event) => setRemark(event.target.value)}
-            />
-            <input
-              type="file"
-              onChange={handleFileChange}
-              style={{ marginTop: "10px" }}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseAttachmentDialog}>Annuler</Button>
-            <Button onClick={handleAddAttachment} color="primary">
-              Ajouter
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        <Dialog open={openRejectDialog} onClose={handleCloseRejectDialog}>
-          <DialogTitle>Refuser Timesheet</DialogTitle>
-          <DialogContent>
-            <TextField
-              margin="dense"
-              label="Commentaire"
-              fullWidth
-              value={rejectComment}
-              onChange={handleRejectCommentChange}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseRejectDialog} sx={{ backgroundColor: '#046C92', color: 'white' }}>
-              Annuler
-            </Button>
-            <Button 
-              onClick={handleSubmitRejectComment} 
-              color="primary"
-              sx={{ backgroundColor: '#046C92', color: 'white' }}
-            >
-              Envoyer
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        <div style={{ display: "flex", justifyContent: "center", marginTop: "20px" }}>
+        <Box display="flex" justifyContent="flex-start" mt={2}>
           <Button
-            onClick={handleAcceptTimesheet}
+            variant="contained"
             color="primary"
-            sx={{ backgroundColor: '#046C92', color: 'white', marginRight: "20px" }}
+            style={styles.button}
+            onClick={handleAccept}
           >
             Accepter
           </Button>
           <Button
-            onClick={handleRejectTimesheet}
-            color="primary"
-            sx={{ backgroundColor: '#D32F2F', color: 'white' }}
+            variant="contained"
+            color="secondary"
+            style={styles.button}
+            onClick={handleReject}
           >
             Refuser
           </Button>
-        </div>
+          <Button
+            variant="contained"
+            color="secondary"
+            style={styles.button}
+            onClick={handleAnuule}
+          >
+            Annuler 
+          </Button>
+        </Box>
+        <Dialog open={openCommentDialog} onClose={handleCloseCommentDialog}>
+          <DialogTitle>Ajouter un commentaire</DialogTitle>
+          <DialogContent>
+            <TextField
+              label="Commentaire"
+              fullWidth
+              variant="outlined"
+              value={comment}
+              onChange={handleCommentChange}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseCommentDialog} color="secondary">
+              Annuler
+            </Button>
+            <Button onClick={handleCommentSubmit} color="primary">
+              Soumettre
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
     </>
   );
 };
 
 const styles = {
-  container: {
+  container: (theme) => ({
     fontFamily: "Arial, sans-serif",
     margin: "20px",
     padding: "20px",
-    backgroundColor: "#f9f9f9",
-    border: "1px solid #ddd",
+    backgroundColor: theme.palette.background.paper,
+    border: `1px solid ${theme.palette.divider}`,
     borderRadius: "8px",
     boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+  }),
+  buttonContainer: {
+    display: "flex",
+    justifyContent: "flex-start",
+    marginTop: "20px",
   },
-  chipNew: {
-    backgroundColor: "#E0F7FA",
-    color: "#036B91",
-  },
-  chipToDo: {
-    backgroundColor: "#FFF3E0",
-    color: "#EF7304",
-  },
-  chipDoing: {
-    backgroundColor: "#E3F2FD",
-    color: "#1976D2",
-  },
-  chipTerminated: {
-    backgroundColor: "#E8F5E9",
-    color: "#A1B848",
-  },
-  chipRemoved: {
-    backgroundColor: "#FFEBEE",
-    color: "#D32F2F",
-  },
-  chipFacturable: {
-    backgroundColor: "#E8F5E9",
-    color: "#A1B848",
-  },
-  chipNonFacturable: {
-    backgroundColor: "#FFF3E0",
-    color: "#EF7304",
+  button: {
+    marginLeft: "10px",
+    backgroundColor: '#046C92',
+    color: 'white',
   },
 };
 

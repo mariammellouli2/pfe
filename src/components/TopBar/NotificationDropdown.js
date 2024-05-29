@@ -9,18 +9,17 @@ const NotificationDropdown = () => {
 
   useEffect(() => {
     const connection = new signalR.HubConnectionBuilder()
-        .withUrl("https://localhost:44352/api/Notification", {
-            withCredentials: true
-        })
-        .withAutomaticReconnect()
-        .build();
-
+    .withUrl("https://localhost:44352/api/Notification", {
+      withCredentials: true
+  })
+  .withAutomaticReconnect()
+  .build();
     connection.start()
-        .then(() => console.log("Connected to SignalR"))
+       .then(() => console.log("Connected to SignalR"))
         .catch(err => console.log("Connection error: ", err));
 
-    connection.on("ReceiveNotification", (message) => {
-        setNotifications(prev => [...prev, message]);
+        connection.on("ReceiveNotification", (message) => {
+          setNotifications(prev => [...prev, message]);
     });
 
     return () => {
